@@ -1,0 +1,41 @@
+{
+    "name": "wa-gateway-service",
+    "version": "2.0.0",
+    "description": "Modern WhatsApp Gateway with Baileys, Bun, and Socket.IO",
+    "main": "src/index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "bun --watch src/index.ts",
+        "start": "bun src/index.ts",
+        "type-check": "tsc --noEmit",
+        "clean": "rm -rf logs/* sessions/*"
+    },
+    "keywords": [
+        "whatsapp",
+        "gateway",
+        "baileys",
+        "socket.io",
+        "bun",
+        "api"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+        "@google/genai": "^1.28.0",
+        "@hapi/boom": "^10.0.1",
+        "atexovi-baileys": "github:atex-ovi/atexovi-baileys",
+        "axios": "^1.13.1",
+        "baileys": "^7.0.0-rc.6",
+        "hono": "^4.9.9",
+        "jimp": "^1.6.0",
+        "mongoose": "^9.0.0",
+        "qrcode": "^1.5.4",
+        "socket.io": "^4.8.1"
+    },
+    "devDependencies": {
+        "@types/bun": "^1.2.23",
+        "@types/qrcode": "^1.5.5",
+        "typescript": "^5.0.0"
+    }
+}

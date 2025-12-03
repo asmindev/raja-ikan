@@ -1,0 +1,102 @@
+{
+  "success": true,
+  "code": "Ok",
+  "optimized_route": [0, 2, 1],
+  "waypoints": [
+    {
+      "index": 0,
+      "original_index": 0,
+      "latitude": -3.9778,
+      "longitude": 122.5194,
+      "distance_from_previous": 0.0,
+      "cumulative_distance": 0.0,
+      "name": "Stop 1"
+    },
+    {
+      "index": 1,
+      "original_index": 2,
+      "latitude": -3.9812,
+      "longitude": 122.5267,
+      "distance_from_previous": 1234.5,
+      "cumulative_distance": 1234.5,
+      "name": "Stop 2"
+    },
+    {
+      "index": 2,
+      "original_index": 1,
+      "latitude": -3.9689,
+      "longitude": 122.5342,
+      "distance_from_previous": 2186.3,
+      "cumulative_distance": 3420.8,
+      "name": "Stop 3"
+    }
+  ],
+  "legs": [
+    {
+      "leg_index": 0,
+      "start_waypoint_index": 0,
+      "end_waypoint_index": 1,
+      "distance": 1234.5,
+      "duration": 148.14,
+      "steps": [
+        {
+          "step_index": 0,
+          "instruction": "Head to Stop 2",
+          "distance": 1234.5,
+          "duration": 148.14,
+          "start_location": [-3.9778, 122.5194],
+          "end_location": [-3.9812, 122.5267],
+          "geometry": [
+            [-3.9778, 122.5194],
+            [-3.9785, 122.5210],
+            [-3.9795, 122.5230],
+            [-3.9805, 122.5250],
+            [-3.9812, 122.5267]
+          ]
+        }
+      ],
+      "summary": "From Stop 1 to Stop 2"
+    },
+    {
+      "leg_index": 1,
+      "start_waypoint_index": 1,
+      "end_waypoint_index": 2,
+      "distance": 2186.3,
+      "duration": 262.36,
+      "steps": [
+        {
+          "step_index": 0,
+          "instruction": "Head to Stop 3",
+          "distance": 2186.3,
+          "duration": 262.36,
+          "start_location": [-3.9812, 122.5267],
+          "end_location": [-3.9689, 122.5342],
+          "geometry": [
+            [-3.9812, 122.5267],
+            [-3.9800, 122.5280],
+            [-3.9750, 122.5310],
+            [-3.9720, 122.5325],
+            [-3.9689, 122.5342]
+          ]
+        }
+      ],
+      "summary": "From Stop 2 to Stop 3"
+    }
+  ],
+  "total_distance_meters": 3420.8,
+  "total_distance_km": 3.42,
+  "estimated_time_minutes": 6.85,
+  "total_duration_seconds": 410.5,
+  "computation_time_seconds": 2.34,
+  "geometry": [
+    [-3.9778, 122.5194],
+    [-3.9785, 122.5210],
+    [-3.9795, 122.5230],
+    [-3.9805, 122.5250],
+    [-3.9812, 122.5267],
+    [-3.9800, 122.5280],
+    [-3.9750, 122.5310],
+    [-3.9720, 122.5325],
+    [-3.9689, 122.5342]
+  ]
+}

@@ -1,0 +1,27 @@
+{
+    "code": "Ok",
+    "waypoints": [
+        {
+            "waypoint_index": 0,
+            "trips_idx": 0,
+            "latitude": -3.9778,
+            "longitude": 122.5194
+        },
+        {
+            "waypoint_index": 1,
+            "trips_idx": 2,
+            "latitude": -3.9812,
+            "longitude": 122.5267
+        },
+        {
+            "waypoint_index": 2,
+            "trips_idx": 1,
+            "latitude": -3.9689,
+            "longitude": 122.5342
+        }
+    ],
+    "total_distance": 3420.8,
+    "total_duration": 410.5,
+    "osrm_url": "http://router.project-osrm.org/route/v1/driving/122.5194,-3.9778;122.5267,-3.9812;122.5342,-3.9689?steps=true&overview=full&annotations=true",
+    "optimized_order": [0, 2, 1]
+}

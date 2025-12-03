@@ -1,0 +1,80 @@
+{
+  "code": "Ok",
+  "waypoints": [
+    {
+      "hint": "",
+      "distance": 0.0,
+      "name": "Stop 1",
+      "location": [122.5194, -3.9778]
+    },
+    {
+      "hint": "",
+      "distance": 0.0,
+      "name": "Stop 2",
+      "location": [122.5267, -3.9812]
+    },
+    {
+      "hint": "",
+      "distance": 0.0,
+      "name": "Stop 3",
+      "location": [122.5342, -3.9689]
+    }
+  ],
+  "routes": [
+    {
+      "distance": 3420.8,
+      "duration": 410.5,
+      "weight": 410.5,
+      "weight_name": "routability",
+      "legs": [
+        {
+          "distance": 1234.5,
+          "duration": 148.14,
+          "weight": 148.14,
+          "summary": "Stop 1 to Stop 2",
+          "steps": [
+            {
+              "distance": 1234.5,
+              "duration": 148.14,
+              "geometry": "[[122.5194,-3.9778],[122.5210,-3.9785],[122.5230,-3.9795],[122.5267,-3.9812]]",
+              "name": "Route to Stop 2",
+              "mode": "driving",
+              "maneuver": {
+                "bearing_after": 0,
+                "bearing_before": 0,
+                "location": [122.5194, -3.9778],
+                "type": "depart",
+                "modifier": "straight"
+              },
+              "intersections": []
+            }
+          ]
+        },
+        {
+          "distance": 2186.3,
+          "duration": 262.36,
+          "weight": 262.36,
+          "summary": "Stop 2 to Stop 3",
+          "steps": [
+            {
+              "distance": 2186.3,
+              "duration": 262.36,
+              "geometry": "[[122.5267,-3.9812],[122.5280,-3.9800],[122.5310,-3.9750],[122.5342,-3.9689]]",
+              "name": "Route to Stop 3",
+              "mode": "driving",
+              "maneuver": {
+                "bearing_after": 0,
+                "bearing_before": 0,
+                "location": [122.5267, -3.9812],
+                "type": "turn",
+                "modifier": "straight"
+              },
+              "intersections": []
+            }
+          ]
+        }
+      ],
+      "geometry": "[[122.5194,-3.9778],[122.5210,-3.9785],[122.5230,-3.9795],[122.5267,-3.9812],[122.5280,-3.9800],[122.5310,-3.9750],[122.5342,-3.9689]]"
+    }
+  ]
+}
