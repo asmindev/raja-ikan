@@ -9,8 +9,9 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Fragment } from 'react/jsx-runtime';
+import { toast } from 'sonner';
 
 // Type for breadcrumb item
 export interface BreadcrumbItemType {
@@ -25,11 +26,21 @@ export default function Layout({
     children: React.ReactNode;
     breadcrumbs?: BreadcrumbItemType[];
 }) {
+    const { props } = usePage();
+    const flash = props.flash as {
+        type: 'success' | 'error' | 'message' | null;
+        content: string | null;
+    };
+    if (flash.content) {
+        toast[flash.type ?? 'message'](flash.content);
+    }
+
+    const sidebarState = props.sidebarOpen as boolean;
     return (
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={sidebarState}>
             <AdminSidebar />
-            <main className="min-w-0 flex-1 overflow-auto">
-                <header className="flex items-center gap-2 p-4">
+            <main className="min-w-0 flex-1">
+                <header className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-4">
                     <SidebarTrigger />
                     <Separator
                         orientation="vertical"

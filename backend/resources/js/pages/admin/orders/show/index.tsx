@@ -7,7 +7,8 @@ import { OrderTimeline } from './components/order-timeline';
 import { PagePropsWithOrder } from './types';
 
 export default function AdminOrderShow() {
-    const { order } = usePage().props as unknown as PagePropsWithOrder;
+    const { order, availableDrivers } = usePage()
+        .props as unknown as PagePropsWithOrder;
 
     const breadcrumbs: BreadcrumbItemType[] = [
         { label: 'Admin', url: '/admin' },
@@ -18,7 +19,10 @@ export default function AdminOrderShow() {
     return (
         <Layout breadcrumbs={breadcrumbs}>
             <div className="w-full p-6">
-                <OrderHeader order={order} />
+                <OrderHeader
+                    order={order}
+                    availableDrivers={availableDrivers}
+                />
                 <OrderInfoCards order={order} />
                 <div className="flex flex-col md:flex-row md:gap-4">
                     <div className="flex-1">

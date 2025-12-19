@@ -14,7 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import Layout, { BreadcrumbItemType } from '@/layouts/admin-layout';
 import routes from '@/routes/admin/products';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -87,7 +87,7 @@ export default function AdminProductsCreate() {
         }
 
         router.post(routes.store.url(), formData, {
-            onSuccess: () => router.visit('/admin/products'),
+            onSuccess: () => router.visit(routes.index.url()),
             onError: (errors) => {
                 // Handle server validation errors
                 Object.keys(errors).forEach((key) => {
@@ -338,16 +338,15 @@ export default function AdminProductsCreate() {
 
                                 {/* Actions */}
                                 <div className="col-span-full flex justify-end space-x-4 border-t pt-6">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() =>
-                                            router.visit('/admin/products')
-                                        }
-                                        className="px-8"
-                                    >
-                                        Cancel
-                                    </Button>
+                                    <Link href={routes.index.url()}>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="px-8"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </Link>
                                     <Button type="submit" className="px-8">
                                         Create Product
                                     </Button>

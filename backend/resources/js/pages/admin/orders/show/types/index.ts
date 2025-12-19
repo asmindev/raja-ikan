@@ -32,6 +32,7 @@ export interface Order {
     driver_id: number | null;
     created_at: string;
     updated_at: string;
+    confirmed_at: string | null;
     accepted_at: string | null;
     pickup_at: string | null;
     delivering_at: string | null;
@@ -42,6 +43,14 @@ export interface Order {
     order_lines: OrderLine[];
 }
 
+export interface AvailableDriver {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+}
+
 export interface PagePropsWithOrder {
     order: Order;
+    availableDrivers: AvailableDriver[];
 }

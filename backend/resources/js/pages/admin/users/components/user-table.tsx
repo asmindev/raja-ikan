@@ -9,6 +9,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { User } from '@/types/user';
+import { Link } from '@inertiajs/react';
 import {
     ColumnDef,
     flexRender,
@@ -68,26 +69,18 @@ const columns: ColumnDef<User>[] = [
             const user = row.original;
             return (
                 <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            window.location.href = `/admin/users/${user.id}`;
-                        }}
-                    >
-                        <Eye className="mr-1 h-4 w-4" />
-                        View
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            window.location.href = `/admin/users/${user.id}/edit`;
-                        }}
-                    >
-                        <Pencil className="mr-1 h-4 w-4" />
-                        Edit
-                    </Button>
+                    <Link href={route('admin.users.show', user.id)}>
+                        <Button variant="outline" size="sm">
+                            <Eye className="mr-1 h-4 w-4" />
+                            View
+                        </Button>
+                    </Link>
+                    <Link href={route('admin.users.edit', user.id)}>
+                        <Button variant="outline" size="sm">
+                            <Pencil className="mr-1 h-4 w-4" />
+                            Edit
+                        </Button>
+                    </Link>
                 </div>
             );
         },

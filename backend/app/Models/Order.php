@@ -14,7 +14,13 @@ class Order extends Model
         'customer_id',
         'driver_id',
         'address',
+        'latitude',
+        'longitude',
+        'notes',
+        'payment_method',
+        'payment_status',
         'estimated',
+        'confirmed_at',
         'accepted_at',
         'pickup_at',
         'delivering_at',
@@ -24,7 +30,10 @@ class Order extends Model
 
     protected $casts = [
         'total' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
         'estimated' => 'datetime',
+        'confirmed_at' => 'datetime',
         'accepted_at' => 'datetime',
         'pickup_at' => 'datetime',
         'delivering_at' => 'datetime',
@@ -55,6 +64,11 @@ class Order extends Model
     public function routes()
     {
         return $this->belongsToMany(Route::class, 'route_orders')->withPivot('sequence');
+    }
+
+    public function statusLogs()
+    {
+        return $this->hasMany(OrderStatusLog::class)->orderBy('created_at', 'desc');
     }
 
     // Accessor untuk items

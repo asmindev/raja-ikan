@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Layout, { BreadcrumbItemType } from '@/layouts/admin-layout';
 import { User } from '@/types/user';
-import { router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import 'leaflet/dist/leaflet.css';
 import { Calendar, Edit, Mail, MapPin, Phone, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -247,24 +247,27 @@ export default function Show({ user }: Props) {
 
                     {/* Action Buttons */}
                     <div className="flex gap-3">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => router.visit('/admin/users')}
+                        <Link
+                            href={route('admin.users.index')}
                             className="flex-1"
                         >
-                            Kembali
-                        </Button>
-                        <Button
-                            type="button"
-                            className="flex-1 gap-2"
-                            onClick={() =>
-                                router.visit(`/admin/users/${user.id}/edit`)
-                            }
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                            >
+                                Kembali
+                            </Button>
+                        </Link>
+                        <Link
+                            href={route('admin.users.edit', user.id)}
+                            className="flex-1"
                         >
-                            <Edit className="h-4 w-4" />
-                            Edit User
-                        </Button>
+                            <Button type="button" className="w-full gap-2">
+                                <Edit className="h-4 w-4" />
+                                Edit User
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Product extends Model
 {
@@ -32,10 +33,18 @@ class Product extends Model
     public function getImageAttribute()
     {
         $imagePath = $this->attributes['image'] ?? null;
-        // if starts with http or https, return as is
-        if ($imagePath && (str_starts_with($imagePath, 'http://') || str_starts_with($imagePath, 'https://'))) {
-            return $imagePath;
+
+        // If no image, return placeholder
+        if (!$imagePath) {
+            return 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
         }
-        return $imagePath ? asset('storage/' . $imagePath) : null;
+
+        // If starts with http or https, return as is (external URL)
+        if (str_starts_with($imagePath, 'http')) {
+            return 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
+        }
+
+        // Return local storage URL
+        return asset('storage/' . $imagePath);
     }
 }

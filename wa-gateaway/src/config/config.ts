@@ -5,8 +5,12 @@ export const CONFIG = {
     SESSION_PATH: path.resolve(process.cwd(), "./sesi"),
     LOG_PATH: path.resolve(process.cwd(), "./logs"),
     LOG_LEVEL: process.env.LOG_LEVEL || "info", // 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+
+    // Backend API Configuration
+    BACKEND_URL: process.env.BACKEND_URL || "http://localhost:8000",
     BACKEND_API_URL:
         process.env.BACKEND_API_URL || "http://localhost:8000/api/v1",
+    BACKEND_API_KEY: process.env.BACKEND_API_KEY || "",
 
     // AI Configuration
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",

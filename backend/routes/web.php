@@ -6,6 +6,10 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\OrderController as ApiOrderController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -35,6 +39,8 @@ Route::prefix('admin')->group(function () {
     Route::get('orders/create', [OrderController::class, 'create'])->name('admin.orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('admin.orders.store');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+    Route::post('orders/{order}/confirm', [OrderController::class, 'confirm'])->name('admin.orders.confirm');
+    Route::post('orders/{order}/assign-driver', [OrderController::class, 'assignDriver'])->name('admin.orders.assign-driver');
     Route::get('orders/{order}/edit', [OrderController::class, 'edit'])->name('admin.orders.edit');
     Route::put('orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
@@ -51,6 +57,44 @@ Route::prefix('admin')->group(function () {
     Route::get('messages', function () {
         return Inertia::render('admin/messages/index');
     })->name('admin.messages.index');
+});
+
+// Customer routes (role: customer)
+Route::middleware(['auth', 'verified'])->prefix('customer')->group(function () {
+    // Dashboard
+
+    // redirect /customer to /customer/dashboard
+    Route::redirect('/', '/customer/dashboard');
+    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
+        ->name('customer.dashboard');
+
+    // Products (Browse & Search)
+    Route::get('/products', [CustomerProductController::class, 'index'])
+        ->name('customer.products.index');
+    Route::get('/products/{product}', [CustomerProductController::class, 'show'])
+        ->name('customer.products.show');
+
+    // Cart
+    Route::get('/cart', [CartController::class, 'index'])
+        ->name('customer.cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])
+        ->name('customer.cart.add');
+    Route::patch('/cart/{cart}', [CartController::class, 'update'])
+        ->name('customer.cart.update');
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy'])
+        ->name('customer.cart.destroy');
+
+    // Orders
+    Route::get('/orders', [CustomerOrderController::class, 'index'])
+        ->name('customer.orders.index');
+    Route::get('/orders/create', [CustomerOrderController::class, 'create'])
+        ->name('customer.orders.create');
+    Route::post('/orders', [CustomerOrderController::class, 'store'])
+        ->name('customer.orders.store');
+    Route::get('/orders/{order}', [CustomerOrderController::class, 'show'])
+        ->name('customer.orders.show');
+    Route::patch('/orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])
+        ->name('customer.orders.cancel');
 });
 
 Route::prefix('api/v1')->group(function () {

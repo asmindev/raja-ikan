@@ -18,6 +18,11 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('driver_id')->nullable()->constrained('users')->onDelete('set null');
             $table->text('address');
+            $table->decimal('latitude', 10, 8)->nullable()->comment('Koordinat pengiriman');
+            $table->decimal('longitude', 11, 8)->nullable()->comment('Koordinat pengiriman');
+            $table->text('notes')->nullable()->comment('Catatan customer');
+            $table->enum('payment_method', ['cash', 'transfer', 'ewallet'])->default('cash');
+            $table->enum('payment_status', ['unpaid', 'paid', 'refunded'])->default('unpaid');
             $table->timestamp('estimated')->nullable();
             $table->timestamp('delivery_at')->nullable();
             $table->timestamp('accepted_at')->nullable()

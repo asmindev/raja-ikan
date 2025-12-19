@@ -37,7 +37,7 @@ class ProductController extends Controller
         $activeProducts = Product::where('is_active', true)->count();
         $inactiveProducts = Product::where('is_active', false)->count();
 
-        return Inertia::render('admin/products/index', [
+        return Inertia::render('admin/products/index/index', [
             'products' => $products,
             'filters' => [
                 'search' => $search,
@@ -180,14 +180,7 @@ class ProductController extends Controller
             'is_active' => $request->input('is_active'),
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product status updated successfully.',
-            'data' => [
-                'id' => $product->id,
-                'is_active' => $product->is_active,
-            ],
-        ]);
+        return back()->with('success', 'Product status updated successfully.');
     }
 
     /**

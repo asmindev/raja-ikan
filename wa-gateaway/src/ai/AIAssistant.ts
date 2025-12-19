@@ -2,51 +2,53 @@
  * AI Assistant menggunakan Google Gemini dengan Function Calling
  */
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import type { ChatMessage, AIAssistantConfig } from "./types";
-import { availableFunctions } from "./functions";
+import { availableFunctions, initializeFunctions } from "./functions";
 import { Logger } from "../core/logger/Logger";
 import { chatHistoryService } from "../services/ChatHistoryService";
+import type { IGeminiClient } from "../infrastructure/external/gemini";
 
 export class AIAssistant {
-    private genAI: GoogleGenAI;
+    private geminiClient: IGeminiClient;
     private config: AIAssistantConfig;
     private logger: Logger;
     private conversationHistory: Map<string, ChatMessage[]>;
 
-    constructor(apiKey: string, config?: Partial<AIAssistantConfig>) {
-        console.log("Initializing AIAssistant with Gemini API Key");
-        this.genAI = new GoogleGenAI({ apiKey });
+    constructor(
+        geminiClient: IGeminiClient,
+        config?: Partial<AIAssistantConfig>
+    ) {
+        console.log("Initializing AIAssistant with Gemini client");
+
+        this.geminiClient = geminiClient;
+
+        // Initialize functions with GeminiClient dependency
+        initializeFunctions(geminiClient);
 
         this.config = {
-            model: config?.model || "gemini-2.5-flash",
+            model: config?.model || "gemini-2.0-flash",
             temperature: config?.temperature ?? 0.7,
             maxTokens: config?.maxTokens ?? 1000,
 
             systemPrompt:
                 config?.systemPrompt ||
-                `Asisten penjualan "Raja Ikan" - toko ikan segar terpercaya.
+                `You are an order processing assistant for "Raja Ikan" fish store.
 
-TUGAS:
-1. Customer tanya daftar/harga/iya/mau lihat → LANGSUNG gunakan get_products()
-2. Customer pesan produk → WAJIB gunakan extract_order_items(text: "pesan asli customer")
-3. Customer jawab konfirmasi Ya/Tidak → Gunakan extract_confirmation(text)
+Your PRIMARY task is to extract order information using the extract_order_items function whenever a customer mentions a product with quantity.
 
-ATURAN PENTING:
-- Ramah & profesional dengan bahasa Indonesia
-- Hanya jual ikan segar
-- WAJIB gunakan function untuk data real-time
-- Jika customer bilang "iya", "mau", "boleh", "lihat" → LANGSUNG panggil get_products()
-- Jangan ulangi pertanyaan yang sama
-- Setelah extract_order_items(), JANGAN tanya konfirmasi lagi - system akan kirim button otomatis
+MANDATORY BEHAVIOR:
+If input contains: [product_name] + [quantity_number] + optional("kg"|"kilo"|"ekor"|"buah")
+Then: ALWAYS call extract_order_items function FIRST
 
-FLOW PESANAN:
-Customer: "pesan lele 5kg"
-→ Panggil extract_order_items(text: "pesan lele 5kg")
-→ Balas: "Baik, pesanan Anda sedang diproses..."
-(System akan kirim button konfirmasi otomatis)
+DO NOT write a response text without calling the function first.
 
-Sapa: "Selamat datang di Raja Ikan! Mau lihat daftar ikan hari ini?"`,
+Available functions:
+- extract_order_items(text: string) - Extract order items from customer message
+- get_products() - List available products
+- extract_confirmation(text: string) - Parse yes/no responses
+
+After extract_order_items returns data, then you can respond in Indonesian.`,
         };
 
         this.logger = new Logger("AIAssistant");
@@ -175,6 +177,14 @@ Sapa: "Selamat datang di Raja Ikan! Mau lihat daftar ikan hari ini?"`,
                 },
             ];
 
+            this.logger.debug(
+                `Available functions: ${
+                    tools[0]?.functionDeclarations
+                        ?.map((f) => f.name)
+                        .join(", ") || "none"
+                }`
+            );
+
             // Build contents dari full conversation history
             // Skip system prompt (index 0) karena sudah di-handle terpisah
             const contents: any[] = [];
@@ -182,10 +192,12 @@ Sapa: "Selamat datang di Raja Ikan! Mau lihat daftar ikan hari ini?"`,
             // Add conversation history (skip system prompt)
             for (let i = 1; i < history.length; i++) {
                 const msg = history[i];
-                contents.push({
-                    role: msg.role === "assistant" ? "model" : "user",
-                    parts: [{ text: msg.content }],
-                });
+                if (msg) {
+                    contents.push({
+                        role: msg.role === "assistant" ? "model" : "user",
+                        parts: [{ text: msg.content }],
+                    });
+                }
             }
 
             // Add current user message
@@ -199,16 +211,25 @@ Sapa: "Selamat datang di Raja Ikan! Mau lihat daftar ikan hari ini?"`,
             );
 
             // Call generateContent dengan tools dan system instruction
-            let response = await this.genAI.models.generateContent({
-                model: this.config.model,
+            // Use ANY mode to force function calling
+            let response = await this.geminiClient.generateContent({
                 contents: contents,
-                config: {
-                    systemInstruction: this.config.systemPrompt, // System prompt terpisah
-                    tools: tools,
-                    temperature: 0, // Best practice: gunakan 0 untuk function calling
-                    maxOutputTokens: this.config.maxTokens,
+                systemInstruction: this.config.systemPrompt,
+                tools: tools,
+                toolConfig: {
+                    functionCallingConfig: {
+                        mode: "ANY",
+                    },
                 },
+                temperature: 0.3,
+                maxOutputTokens: this.config.maxTokens,
             });
+
+            this.logger.debug(
+                `Gemini response - functionCalls: ${
+                    response.functionCalls?.length || 0
+                }, text: ${response.text?.substring(0, 100)}`
+            );
 
             // Handle function calls (bisa parallel/multiple function calls)
             while (
@@ -287,15 +308,12 @@ Sapa: "Selamat datang di Raja Ikan! Mau lihat daftar ikan hari ini?"`,
                 });
 
                 // Call lagi dengan function results
-                response = await this.genAI.models.generateContent({
-                    model: this.config.model,
+                response = await this.geminiClient.generateContent({
                     contents: contents,
-                    config: {
-                        systemInstruction: this.config.systemPrompt,
-                        tools: tools,
-                        temperature: 0,
-                        maxOutputTokens: this.config.maxTokens,
-                    },
+                    systemInstruction: this.config.systemPrompt,
+                    tools: tools,
+                    temperature: 0,
+                    maxOutputTokens: this.config.maxTokens,
                 });
             }
 

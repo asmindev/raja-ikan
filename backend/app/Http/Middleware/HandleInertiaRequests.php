@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -36,12 +37,16 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'flash' => [
-                "message" => $request->session()->get('message'),
+            'flash' => fn() => [
+                'type' => session()->has('error')
+                    ? 'error'
+                    : (session()->has('success') ? 'success' : 'message'),
+                'content' => session()->get('error')
+                    ?? session()->get('success')
+                    ?? session()->get('message'),
             ],
             'auth' => [
                 'user' => $request->user(),

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Layout, { BreadcrumbItemType } from '@/layouts/admin-layout';
 import routes from '@/routes/admin/products';
 import { PageProps, Product } from '@/types/product';
-import { router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, Calendar, Check, DollarSign, Edit2, X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItemType[] = [
@@ -28,25 +28,22 @@ export default function AdminProductsShow() {
                         Product Details
                     </h2>
                     <div className="flex gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => router.visit(routes.index.url())}
-                            className="gap-2"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                            Back
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={() =>
-                                router.visit(routes.edit.url(product))
-                            }
-                            className="gap-2"
-                        >
-                            <Edit2 className="h-4 w-4" />
-                            Edit
-                        </Button>
+                        <Link href={routes.index.url()}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="gap-2"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                Back
+                            </Button>
+                        </Link>
+                        <Link href={routes.edit.url(product)}>
+                            <Button type="button" className="gap-2">
+                                <Edit2 className="h-4 w-4" />
+                                Edit
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 

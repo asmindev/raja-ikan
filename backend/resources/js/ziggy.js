@@ -1,0 +1,235 @@
+const Ziggy = {
+    url: 'http:\/\/localhost:8000',
+    port: 8000,
+    defaults: {},
+    routes: {
+        login: { uri: 'login', methods: ['GET', 'HEAD'] },
+        'login.store': { uri: 'login', methods: ['POST'] },
+        logout: { uri: 'logout', methods: ['POST'] },
+        'password.request': {
+            uri: 'forgot-password',
+            methods: ['GET', 'HEAD'],
+        },
+        'password.reset': {
+            uri: 'reset-password\/{token}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['token'],
+        },
+        'password.email': { uri: 'forgot-password', methods: ['POST'] },
+        'password.update': { uri: 'reset-password', methods: ['POST'] },
+        register: { uri: 'register', methods: ['GET', 'HEAD'] },
+        'register.store': { uri: 'register', methods: ['POST'] },
+        'password.confirm': {
+            uri: 'user\/confirm-password',
+            methods: ['GET', 'HEAD'],
+        },
+        'password.confirmation': {
+            uri: 'user\/confirmed-password-status',
+            methods: ['GET', 'HEAD'],
+        },
+        'password.confirm.store': {
+            uri: 'user\/confirm-password',
+            methods: ['POST'],
+        },
+        'sanctum.csrf-cookie': {
+            uri: 'sanctum\/csrf-cookie',
+            methods: ['GET', 'HEAD'],
+        },
+        home: { uri: '\/', methods: ['GET', 'HEAD'] },
+        optimize: { uri: 'optimize', methods: ['GET', 'HEAD'] },
+        'admin.dashboard.index': {
+            uri: 'admin\/dashboard',
+            methods: ['GET', 'HEAD'],
+        },
+        'admin.users.index': { uri: 'admin\/users', methods: ['GET', 'HEAD'] },
+        'admin.users.show': {
+            uri: 'admin\/users\/{user}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['user'],
+            bindings: { user: 'id' },
+        },
+        'admin.users.edit': {
+            uri: 'admin\/users\/{user}\/edit',
+            methods: ['GET', 'HEAD'],
+            parameters: ['user'],
+            bindings: { user: 'id' },
+        },
+        'admin.users.update': {
+            uri: 'admin\/users\/{user}',
+            methods: ['PUT'],
+            parameters: ['user'],
+            bindings: { user: 'id' },
+        },
+        'admin.orders.index': {
+            uri: 'admin\/orders',
+            methods: ['GET', 'HEAD'],
+        },
+        'admin.orders.create': {
+            uri: 'admin\/orders\/create',
+            methods: ['GET', 'HEAD'],
+        },
+        'admin.orders.store': { uri: 'admin\/orders', methods: ['POST'] },
+        'admin.orders.show': {
+            uri: 'admin\/orders\/{order}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'admin.orders.confirm': {
+            uri: 'admin\/orders\/{order}\/confirm',
+            methods: ['POST'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'admin.orders.assign-driver': {
+            uri: 'admin\/orders\/{order}\/assign-driver',
+            methods: ['POST'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'admin.orders.edit': {
+            uri: 'admin\/orders\/{order}\/edit',
+            methods: ['GET', 'HEAD'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'admin.orders.update': {
+            uri: 'admin\/orders\/{order}',
+            methods: ['PUT'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'admin.orders.destroy': {
+            uri: 'admin\/orders\/{order}',
+            methods: ['DELETE'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'admin.products.toggle-status': {
+            uri: 'admin\/products\/{product}\/toggle-status',
+            methods: ['PATCH'],
+            parameters: ['product'],
+            bindings: { product: 'id' },
+        },
+        'admin.products.index': {
+            uri: 'admin\/products',
+            methods: ['GET', 'HEAD'],
+        },
+        'admin.products.create': {
+            uri: 'admin\/products\/create',
+            methods: ['GET', 'HEAD'],
+        },
+        'admin.products.store': { uri: 'admin\/products', methods: ['POST'] },
+        'admin.products.show': {
+            uri: 'admin\/products\/{product}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['product'],
+            bindings: { product: 'id' },
+        },
+        'admin.products.edit': {
+            uri: 'admin\/products\/{product}\/edit',
+            methods: ['GET', 'HEAD'],
+            parameters: ['product'],
+            bindings: { product: 'id' },
+        },
+        'admin.products.update': {
+            uri: 'admin\/products\/{product}',
+            methods: ['PUT', 'PATCH'],
+            parameters: ['product'],
+            bindings: { product: 'id' },
+        },
+        'admin.products.destroy': {
+            uri: 'admin\/products\/{product}',
+            methods: ['DELETE'],
+            parameters: ['product'],
+            bindings: { product: 'id' },
+        },
+        'admin.messages.index': {
+            uri: 'admin\/messages',
+            methods: ['GET', 'HEAD'],
+        },
+        'customer.dashboard': {
+            uri: 'customer\/dashboard',
+            methods: ['GET', 'HEAD'],
+        },
+        'customer.products.index': {
+            uri: 'customer\/products',
+            methods: ['GET', 'HEAD'],
+        },
+        'customer.products.show': {
+            uri: 'customer\/products\/{product}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['product'],
+            bindings: { product: 'id' },
+        },
+        'customer.cart.index': {
+            uri: 'customer\/cart',
+            methods: ['GET', 'HEAD'],
+        },
+        'customer.cart.add': { uri: 'customer\/cart\/add', methods: ['POST'] },
+        'customer.cart.update': {
+            uri: 'customer\/cart\/{cart}',
+            methods: ['PATCH'],
+            parameters: ['cart'],
+            bindings: { cart: 'id' },
+        },
+        'customer.cart.destroy': {
+            uri: 'customer\/cart\/{cart}',
+            methods: ['DELETE'],
+            parameters: ['cart'],
+            bindings: { cart: 'id' },
+        },
+        'customer.orders.index': {
+            uri: 'customer\/orders',
+            methods: ['GET', 'HEAD'],
+        },
+        'customer.orders.create': {
+            uri: 'customer\/orders\/create',
+            methods: ['GET', 'HEAD'],
+        },
+        'customer.orders.store': { uri: 'customer\/orders', methods: ['POST'] },
+        'customer.orders.show': {
+            uri: 'customer\/orders\/{order}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'customer.orders.cancel': {
+            uri: 'customer\/orders\/{order}\/cancel',
+            methods: ['PATCH'],
+            parameters: ['order'],
+            bindings: { order: 'id' },
+        },
+        'api.v1.orders.index': {
+            uri: 'api\/v1\/orders',
+            methods: ['GET', 'HEAD'],
+        },
+        'api.v1.orders.show': {
+            uri: 'api\/v1\/orders\/{id}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['id'],
+        },
+        'api.v1.orders.store': { uri: 'api\/v1\/orders', methods: ['POST'] },
+        'api.products': { uri: 'api\/v1\/products', methods: ['GET', 'HEAD'] },
+        'api.products.search': {
+            uri: 'api\/v1\/products\/search',
+            methods: ['GET', 'HEAD'],
+        },
+        'api.customers.by-phone': {
+            uri: 'api\/v1\/customers\/by-phone\/{phone}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['phone'],
+        },
+        'storage.local': {
+            uri: 'storage\/{path}',
+            methods: ['GET', 'HEAD'],
+            wheres: { path: '.*' },
+            parameters: ['path'],
+        },
+    },
+};
+if (typeof window !== 'undefined' && typeof window.Ziggy !== 'undefined') {
+    Object.assign(Ziggy.routes, window.Ziggy.routes);
+}
+export { Ziggy };
+export default Ziggy;

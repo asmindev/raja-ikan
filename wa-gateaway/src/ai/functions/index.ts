@@ -3,17 +3,18 @@
  */
 
 import { getProductsFunction } from "./getProducts";
-import { extractOrderItemsFunction } from "./parseOrderIntent";
+import { extractOrderItemsFunction, setGeminiClient } from "./parseOrderIntent";
 import { extractConfirmationFunction } from "./orderFunctions";
 import type { AIFunction } from "../types";
+import type { IGeminiClient } from "../../infrastructure/external/gemini/IGeminiClient";
 
 /**
  * Registry semua functions yang tersedia
  */
 export const availableFunctions: Record<string, AIFunction> = {
     get_products: getProductsFunction,
-    extract_order_items: extractOrderItemsFunction,
-    extract_confirmation: extractConfirmationFunction,
+    // extract_order_items: extractOrderItemsFunction,
+    // extract_confirmation: extractConfirmationFunction,
 };
 
 /**
@@ -28,6 +29,13 @@ export function getFunctionDefinitions() {
             parameters: fn.parameters,
         },
     }));
+}
+
+/**
+ * Initialize functions with dependencies
+ */
+export function initializeFunctions(geminiClient: IGeminiClient) {
+    setGeminiClient(geminiClient);
 }
 
 /**

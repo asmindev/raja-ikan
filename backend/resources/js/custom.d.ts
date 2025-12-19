@@ -1,3 +1,5 @@
+import { route as routeFn } from 'ziggy-js';
+
 // Allow importing CSS and other style files in TypeScript without errors.
 // This file is picked up by the project's tsconfig (includes **/*.d.ts).
 
@@ -31,4 +33,8 @@ interface ImportMeta {
     // Use `unknown` instead of `any` to avoid eslint no-explicit-any warnings.
     glob(pattern: string): Record<string, () => Promise<unknown>>;
     globEager?(pattern: string): Record<string, unknown>;
+}
+
+declare global {
+    var route: typeof routeFn;
 }

@@ -12,7 +12,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import Layout, { BreadcrumbItemType } from '@/layouts/admin-layout';
 import { User } from '@/types/user';
-import { router, useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { Save } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
@@ -39,7 +39,7 @@ export default function Edit({ user }: Props) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(`/admin/users/${user.id}`);
+        put(route('admin.users.update', user.id));
     };
 
     return (
@@ -272,14 +272,18 @@ export default function Edit({ user }: Props) {
 
                         {/* Action Buttons */}
                         <div className="flex gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => router.visit('/admin/users')}
+                            <Link
+                                href={route('admin.users.index')}
                                 className="flex-1"
                             >
-                                Batal
-                            </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                >
+                                    Batal
+                                </Button>
+                            </Link>
                             <Button
                                 type="submit"
                                 className="flex-1 gap-2"

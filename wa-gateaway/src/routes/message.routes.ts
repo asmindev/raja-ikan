@@ -3,7 +3,7 @@ import { Logger } from "../core/logger/Logger";
 import type { WhatsAppService } from "../whatsapp";
 import type { WebSocketService } from "../services/WebSocketService";
 import { chatHistoryService } from "../services/ChatHistoryService";
-import { getAIAssistant } from "../whatsapp/messages";
+import { getContainer } from "../infrastructure/di/Container";
 
 const logger = new Logger("MessageRoutes");
 
@@ -38,7 +38,8 @@ export function createMessageRoutes(
 
             // Invalidate AI cache agar load admin message next time
             try {
-                const assistant = getAIAssistant();
+                const container = getContainer();
+                const assistant = container.getAIAssistant();
                 assistant.invalidateCache(to);
                 logger.debug(
                     `AI cache invalidated for ${to} after admin reply`

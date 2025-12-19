@@ -1,5 +1,9 @@
 {
     "$schema": "https://ui.shadcn.com/schema.json",
+    "registries": {
+        "@v0": "https://v0.dev/chat/b/{name}",
+        "@acme": "https://registry.acme.com/{name}.json"
+    },
     "style": "new-york",
     "rsc": false,
     "tsx": true,

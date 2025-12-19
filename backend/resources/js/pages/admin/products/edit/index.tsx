@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Layout, { BreadcrumbItemType } from '@/layouts/admin-layout';
 import routes from '@/routes/admin/products';
 import { PageProps, Product } from '@/types/product';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -109,7 +109,7 @@ export default function AdminProductsEdit() {
 
         router.post(routes.update.url(product), formData, {
             onSuccess: () => {
-                router.visit('/admin/products');
+                router.visit(routes.index.url());
             },
             onError: (errors) => {
                 // Handle server validation errors
@@ -361,16 +361,15 @@ export default function AdminProductsEdit() {
 
                                 {/* Actions */}
                                 <div className="col-span-full flex justify-end space-x-4 border-t pt-6">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() =>
-                                            router.visit('/admin/products')
-                                        }
-                                        className="px-8"
-                                    >
-                                        Cancel
-                                    </Button>
+                                    <Link href={routes.index.url()}>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="px-8"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </Link>
                                     <Button type="submit" className="px-8">
                                         Update Product
                                     </Button>

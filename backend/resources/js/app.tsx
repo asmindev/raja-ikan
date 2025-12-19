@@ -5,6 +5,14 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { MessagesProvider } from './contexts/messages-context';
 import { initializeTheme } from './hooks/use-appearance';
+// --- TAMBAHKAN BAGIAN INI ---
+import { route as routeFn } from 'ziggy-js';
+import { Ziggy } from './ziggy'; // Pastikan file ini ada (hasil generate artisan)
+
+// Tempelkan ke window agar browser mengenalnya
+(window as any).route = routeFn;
+(window as any).Ziggy = Ziggy;
+// ----------------------------
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -25,7 +33,7 @@ createInertiaApp({
         );
     },
     progress: {
-        color: '#4B5563',
+        color: 'var(--primary)',
     },
 });
 

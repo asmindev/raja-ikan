@@ -76,4 +76,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Route::class, 'driver_id');
     }
+
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
 }
