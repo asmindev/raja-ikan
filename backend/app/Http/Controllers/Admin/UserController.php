@@ -36,7 +36,7 @@ class UserController extends Controller
         $userUsers = User::where('role', 'user')->count();
         $moderatorUsers = User::where('role', 'moderator')->count();
 
-        return Inertia::render('admin/users/index', [
+        return Inertia::render('admin/users/index/index', [
             'users' => $users,
             'filters' => [
                 'search' => $search,
@@ -57,14 +57,14 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        return Inertia::render('admin/users/show', [
+        return Inertia::render('admin/users/show/index', [
             'user' => $user,
         ]);
     }
 
     public function edit(User $user)
     {
-        return Inertia::render('admin/users/edit', [
+        return Inertia::render('admin/users/edit/index', [
             'user' => $user,
         ]);
     }

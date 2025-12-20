@@ -1,11 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import '../../providers/auth_provider.dart';
 
 class PersonalInformationScreen extends ConsumerWidget {
   const PersonalInformationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+
     return Scaffold(
       headers: [
         Container(
@@ -138,7 +142,7 @@ class PersonalInformationScreen extends ConsumerWidget {
                 _buildInfoField(
                   context: context,
                   label: 'Full Name',
-                  value: 'Driver Name',
+                  value: user?.name ?? '-',
                   icon: LucideIcons.user,
                 ),
                 const Gap(16),
@@ -146,8 +150,8 @@ class PersonalInformationScreen extends ConsumerWidget {
                 const Gap(16),
                 _buildInfoField(
                   context: context,
-                  label: 'Driver ID',
-                  value: 'DRV-12345',
+                  label: 'User ID',
+                  value: user != null ? '#${user.id}' : '-',
                   icon: LucideIcons.badgeCheck,
                 ),
                 const Gap(16),
@@ -156,7 +160,7 @@ class PersonalInformationScreen extends ConsumerWidget {
                 _buildInfoField(
                   context: context,
                   label: 'Phone Number',
-                  value: '+62 812 3456 7890',
+                  value: user?.phone ?? '-',
                   icon: LucideIcons.phone,
                 ),
                 const Gap(16),
@@ -165,7 +169,7 @@ class PersonalInformationScreen extends ConsumerWidget {
                 _buildInfoField(
                   context: context,
                   label: 'Email',
-                  value: 'driver@example.com',
+                  value: user?.email ?? '-',
                   icon: LucideIcons.mail,
                 ),
                 const Gap(16),
@@ -173,10 +177,21 @@ class PersonalInformationScreen extends ConsumerWidget {
                 const Gap(16),
                 _buildInfoField(
                   context: context,
-                  label: 'Address',
-                  value: 'Jl. Example No. 123, Kendari',
-                  icon: LucideIcons.mapPin,
+                  label: 'Role',
+                  value: user?.role ?? '-',
+                  icon: LucideIcons.shield,
                 ),
+                if (user?.address != null) ...[
+                  const Gap(16),
+                  const Divider(height: 0),
+                  const Gap(16),
+                  _buildInfoField(
+                    context: context,
+                    label: 'Address',
+                    value: user!.address!,
+                    icon: LucideIcons.mapPin,
+                  ),
+                ],
               ],
             ),
           ),

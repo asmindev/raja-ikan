@@ -113,6 +113,8 @@ Route::prefix('api/v1')->group(function () {
         Route::get('orders/{id}', [ApiOrderController::class, 'show'])->name('api.v1.orders.show');
         Route::post('orders', [ApiOrderController::class, 'store'])->name('api.v1.orders.store');
 
+        // Dashboard
+        Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
         // Routes (Driver only)
         Route::get('routes/pending-orders', [\App\Http\Controllers\Api\RouteController::class, 'pendingOrders']);
         Route::get('routes/active', [\App\Http\Controllers\Api\RouteController::class, 'active']);

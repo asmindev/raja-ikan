@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'personal_information_screen.dart';
 import '../../services/auth_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/driver_stats_provider.dart';
 import '../auth/login_page.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -9,6 +11,10 @@ class ProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final statsAsync = ref.watch(driverStatsProvider);
+
     return Scaffold(
       headers: [
         Container(
@@ -44,9 +50,9 @@ class ProfilePage extends ConsumerWidget {
                   ),
                 ),
                 const Gap(16),
-                const Text(
-                  'shadcn',
-                  style: TextStyle(
+                Text(
+                  user?.name ?? 'Driver',
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -54,53 +60,134 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 const Gap(4),
                 Text(
-                  'DRV-12345',
+                  user?.email ?? '',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
-                const Gap(16),
-                // Stats
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      width: 1,
+                if (user?.phone != null) ...[
+                  const Gap(2),
+                  Text(
+                    user!.phone!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        LucideIcons.circleCheck,
-                        size: 18,
-                        color: Colors.white,
+                ],
+                const Gap(16),
+                // Stats
+                statsAsync.when(
+                  data: (stats) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
                       ),
-                      const Gap(8),
-                      const Text(
-                        '342',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          LucideIcons.circleCheck,
+                          size: 18,
                           color: Colors.white,
                         ),
+                        const Gap(8),
+                        Text(
+                          '${stats.completedDeliveries}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Gap(6),
+                        Text(
+                          'Completed',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  loading: () => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
                       ),
-                      const Gap(6),
-                      Text(
-                        'Completed',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                    child: const SizedBox(
+                      width: 100,
+                      height: 28,
+                      child: Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ],
+                    ),
+                  ),
+                  error: (_, __) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          LucideIcons.circleCheck,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                        const Gap(8),
+                        const Text(
+                          '0',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Gap(6),
+                        Text(
+                          'Completed',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

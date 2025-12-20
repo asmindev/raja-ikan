@@ -1,3 +1,4 @@
+import { StatusBadge } from '@/components/status-badge';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -8,7 +9,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import {
@@ -144,13 +144,11 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Badge
-                        variant={statusConfig.variant}
-                        className="h-fit gap-2 px-3 py-1 text-base"
-                    >
+                    {/* <Badge variant={statusConfig.variant}>
                         <statusConfig.icon className="h-3 w-3" />
                         {statusConfig.label}
-                    </Badge>
+                    </Badge> */}
+                    <StatusBadge status={order.status} />
                     <ButtonGroup>
                         {!order.confirmed_at && order.status === 'pending' && (
                             <Button
@@ -265,6 +263,7 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                         <Popover
                             open={comboboxOpen}
                             onOpenChange={setComboboxOpen}
+                            modal={true}
                         >
                             <PopoverTrigger asChild>
                                 <Button
@@ -279,10 +278,6 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                                             <span className="font-medium">
                                                 {selectedDriver.name}
                                             </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {selectedDriver.phone} •{' '}
-                                                {selectedDriver.email}
-                                            </span>
                                         </div>
                                     ) : (
                                         'Pilih driver...'
@@ -293,6 +288,8 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                             <PopoverContent
                                 className="w-full p-0"
                                 align="start"
+                                side="bottom"
+                                sideOffset={4}
                             >
                                 <Command>
                                     <CommandInput placeholder="Cari driver..." />

@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:mobile/config/api_config.dart';
 import 'package:mobile/models/order.dart';
 import 'package:mobile/services/http_interceptor.dart';
 
 class OrderService {
-  static const String baseUrl = kDebugMode
-      ? 'http://10.0.2.2:8000'
-      : 'https://api.production.com';
+  static String get baseUrl => '${ApiConfig.baseUrl}/api/v1';
 
   Future<(List<OrderModel> orders, int? nextPage)> fetchOrders({
     int page = 1,
@@ -18,9 +17,7 @@ class OrderService {
     if (status != null && status.isNotEmpty) query['status'] = status;
     if (search != null && search.isNotEmpty) query['search'] = search;
 
-    final uri = Uri.parse(
-      '$baseUrl/api/v1/orders',
-    ).replace(queryParameters: query);
+    final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: query);
 
     debugPrint('📦 [OrderService] Fetching orders: $uri');
     final response = await HttpInterceptor.get(uri.toString());
@@ -53,7 +50,7 @@ class OrderService {
   }
 
   Future<OrderModel?> fetchOrderDetail(int orderId) async {
-    final url = '$baseUrl/api/v1/orders/$orderId';
+    final url = '$baseUrl/orders/$orderId';
 
     debugPrint('📦 [OrderService] Fetching order detail: $url');
     final response = await HttpInterceptor.get(url);
@@ -74,5 +71,33 @@ class OrderService {
     final data = json.decode(response.body) as Map<String, dynamic>;
     debugPrint('✅ [OrderService] Order detail loaded');
     return OrderModel.fromJson(data['data'] as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> fetchTodayStats() async {
+    final url = '$baseUrl/dashboard/stats';
+
+    debugPrint('📊 [OrderService] Fetching today stats: $url');
+    final response = await HttpInterceptor.get(url);
+
+    if (response.statusCode == 401) {
+      debugPrint('🔒 [OrderService] 401 detected, returning empty stats');
+      return {
+        'completed_count': 0,
+        'total_earnings': 0,
+        'pending_count': 0,
+        'delivering_count': 0,
+      };
+    }
+
+    if (response.statusCode != 200) {
+      debugPrint(
+        '❌ [OrderService] Failed to fetch stats: ${response.statusCode}',
+      );
+      throw Exception('Failed to load stats: ${response.body}');
+    }
+
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    debugPrint('✅ [OrderService] Stats loaded');
+    return data;
   }
 }

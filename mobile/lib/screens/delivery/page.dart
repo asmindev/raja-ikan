@@ -5,7 +5,7 @@ import '../../models/order.dart';
 import '../../services/route_service.dart';
 import '../../services/location_service.dart';
 import 'widget/route_header.dart';
-import 'widget/route_map_view.dart';
+import 'widget/route_map_view_clean.dart'; // Use clean rebuild version
 import 'widget/route_bottom_sheet.dart';
 
 class RouteMapPage extends StatefulWidget {
@@ -182,14 +182,13 @@ class _RouteMapPageState extends State<RouteMapPage> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(
-                  'Navigasi dimulai! Ikuti rute dan selesaikan pengantaran.',
-                ),
+                content: Text('Navigasi dimulai! Live tracking aktif.'),
                 backgroundColor: Color(0xFF059669),
                 duration: Duration(seconds: 3),
               ),
             );
-            // TODO: Start live location tracking
+            // Live tracking will start automatically in RouteMapView
+            // when route status changes to 'delivering'
           }
         }
       }
@@ -220,12 +219,15 @@ class _RouteMapPageState extends State<RouteMapPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get safe area padding
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return DrawerOverlay(
       child: Scaffold(
         body: Stack(
           children: [
             // Route map with flutter_map - use _currentRoute for updates
-            RouteMapView(
+            RouteMapViewClean(
               key: ValueKey(
                 '${_currentRoute.id}_${_currentRoute.status}',
               ), // Force rebuild on status change
@@ -267,7 +269,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
               Positioned(
                 left: 16,
                 right: 16,
-                bottom: 16,
+                bottom: 16 + bottomPadding,
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(

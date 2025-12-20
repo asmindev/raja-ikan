@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import CustomerLayout, { BreadcrumbItemType } from '@/layouts/customer-layout';
-import { OrderSummary } from '@/pages/user/orders/components/OrderSummary';
+import { OrderSummary } from '@/pages/user/orders/show/components/order-summary';
 import { Head, Link, router } from '@inertiajs/react';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 

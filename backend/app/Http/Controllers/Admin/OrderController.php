@@ -22,6 +22,7 @@ class OrderController extends Controller
         $search = $request->get('search', '');
         $status = $request->get('status', '');
         $driverId = $request->get('driver_id', '');
+        $needsConfirmation = $request->get('needs_confirmation', '');
         $perPage = $request->get('per_page', 10);
 
         $orders = Order::query()
@@ -34,6 +35,10 @@ class OrderController extends Controller
             })
             ->when($status && $status !== 'all', function ($query) use ($status) {
                 $query->where('status', $status);
+            })
+            ->when($needsConfirmation, function ($query) {
+                $query->whereNull('confirmed_at')
+                    ->where('status', 'pending');
             })
             ->when($driverId, function ($query) use ($driverId) {
                 $query->where('driver_id', $driverId);
@@ -50,6 +55,9 @@ class OrderController extends Controller
         // Get statistics
         $totalOrders = Order::count();
         $pendingOrders = Order::where('status', 'pending')->count();
+        $needsConfirmationCount = Order::whereNull('confirmed_at')
+            ->where('status', 'pending')
+            ->count();
         $deliveringOrders = Order::where('status', 'delivering')->count();
         $completedOrders = Order::where('status', 'completed')->count();
         $cancelledOrders = Order::where('status', 'cancelled')->count();
@@ -61,11 +69,13 @@ class OrderController extends Controller
                 'search' => $search,
                 'status' => $status,
                 'driver_id' => $driverId,
+                'needs_confirmation' => $needsConfirmation,
                 'per_page' => $perPage,
             ],
             'stats' => [
                 'total_orders' => $totalOrders,
                 'pending_orders' => $pendingOrders,
+                'needs_confirmation' => $needsConfirmationCount,
                 'delivering_orders' => $deliveringOrders,
                 'completed_orders' => $completedOrders,
                 'cancelled_orders' => $cancelledOrders,

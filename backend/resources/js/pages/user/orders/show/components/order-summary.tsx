@@ -30,31 +30,7 @@ export function OrderSummary({
     return (
         <Card>
             <CardContent className="space-y-4 p-6">
-                <h3 className="text-lg font-semibold">Order Summary</h3>
-
-                <div className="space-y-3">
-                    {safeItems.map((item) => (
-                        <div
-                            key={item.id}
-                            className="flex justify-between text-sm"
-                        >
-                            <div>
-                                <p className="font-medium">
-                                    {item.product_name}
-                                </p>
-                                <p className="text-muted-foreground">
-                                    {item.quantity} x Rp{' '}
-                                    {item.price.toLocaleString('id-ID')}
-                                </p>
-                            </div>
-                            <p className="font-medium">
-                                Rp {item.subtotal.toLocaleString('id-ID')}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
-                <Separator />
+                <h3 className="text-lg font-semibold">Rincian Pembayaran</h3>
 
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -64,7 +40,7 @@ export function OrderSummary({
                     {showDeliveryFee && (
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">
-                                Delivery Fee
+                                Ongkos Kirim
                             </span>
                             <span>
                                 Rp {deliveryFee.toLocaleString('id-ID')}

@@ -1,41 +1,14 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import CustomerLayout from '@/layouts/customer-layout';
 import { Head, router } from '@inertiajs/react';
-import { CreditCard, FileText, MapPin, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-interface User {
-    address: string | null;
-    latitude: number | null;
-    longitude: number | null;
-}
+import { DeliveryForm } from './components/delivery-form';
+import { NotesForm } from './components/notes-form';
+import { OrderSummary } from './components/order-summary';
+import { PaymentForm } from './components/payment-form';
+import { CartItem, User } from './components/types';
 
 interface Props {
     user: User;
-}
-
-interface Product {
-    id: number;
-    name: string;
-    price: number;
-    image: string | null;
-}
-
-interface CartItem {
-    id: number;
-    product: Product;
-    quantity: number;
-    subtotal: number;
 }
 
 export default function CreateOrder({ user }: Props) {
@@ -60,8 +33,8 @@ export default function CreateOrder({ user }: Props) {
 
     const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         setLoading(true);
         setErrors({});
 
@@ -112,127 +85,37 @@ export default function CreateOrder({ user }: Props) {
                     <div className="lg:col-span-2">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Alamat Pengiriman */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <MapPin className="h-5 w-5" />
-                                        Alamat Pengiriman
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="address">
-                                            Alamat Lengkap{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Textarea
-                                            id="address"
-                                            placeholder="Masukkan alamat lengkap pengiriman"
-                                            value={formData.address}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    address: e.target.value,
-                                                })
-                                            }
-                                            rows={3}
-                                            disabled={loading}
-                                        />
-                                        {errors.address && (
-                                            <p className="text-sm text-destructive">
-                                                {errors.address}
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <DeliveryForm
+                                address={formData.address}
+                                onChange={(value) =>
+                                    setFormData({ ...formData, address: value })
+                                }
+                                error={errors.address}
+                                disabled={loading}
+                            />
 
                             {/* Metode Pembayaran */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <CreditCard className="h-5 w-5" />
-                                        Metode Pembayaran
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="payment_method">
-                                            Pilih Metode{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Select
-                                            value={formData.payment_method}
-                                            onValueChange={(value) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    payment_method: value,
-                                                })
-                                            }
-                                            disabled={loading}
-                                        >
-                                            <SelectTrigger id="payment_method">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="cash">
-                                                    Tunai (COD)
-                                                </SelectItem>
-                                                <SelectItem value="transfer">
-                                                    Transfer Bank
-                                                </SelectItem>
-                                                <SelectItem value="ewallet">
-                                                    E-Wallet
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.payment_method && (
-                                            <p className="text-sm text-destructive">
-                                                {errors.payment_method}
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <PaymentForm
+                                value={formData.payment_method}
+                                onChange={(value) =>
+                                    setFormData({
+                                        ...formData,
+                                        payment_method: value,
+                                    })
+                                }
+                                error={errors.payment_method}
+                                disabled={loading}
+                            />
 
                             {/* Catatan */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5" />
-                                        Catatan (Opsional)
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="notes">
-                                            Catatan Tambahan
-                                        </Label>
-                                        <Textarea
-                                            id="notes"
-                                            placeholder="Tambahkan catatan untuk pesanan (opsional)"
-                                            value={formData.notes}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    notes: e.target.value,
-                                                })
-                                            }
-                                            rows={2}
-                                            disabled={loading}
-                                        />
-                                        {errors.notes && (
-                                            <p className="text-sm text-destructive">
-                                                {errors.notes}
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <NotesForm
+                                value={formData.notes}
+                                onChange={(value) =>
+                                    setFormData({ ...formData, notes: value })
+                                }
+                                error={errors.notes}
+                                disabled={loading}
+                            />
 
                             {errors.error && (
                                 <p className="text-sm text-destructive">
@@ -249,109 +132,12 @@ export default function CreateOrder({ user }: Props) {
 
                     {/* Order Summary */}
                     <div className="lg:col-span-1">
-                        <Card className="sticky top-4">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <ShoppingCart className="h-5 w-5" />
-                                    Ringkasan Pesanan
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {cartItems.length === 0 ? (
-                                    <p className="text-center text-sm text-muted-foreground">
-                                        Keranjang kosong
-                                    </p>
-                                ) : (
-                                    <>
-                                        <div className="space-y-3">
-                                            {cartItems.map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="flex gap-3"
-                                                >
-                                                    <img
-                                                        src={
-                                                            item.product
-                                                                .image ||
-                                                            '/placeholder.png'
-                                                        }
-                                                        alt={item.product.name}
-                                                        className="h-16 w-16 rounded-lg object-cover"
-                                                    />
-                                                    <div className="flex-1">
-                                                        <p className="text-sm font-medium">
-                                                            {item.product.name}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {item.quantity} x Rp{' '}
-                                                            {item.product.price.toLocaleString(
-                                                                'id-ID',
-                                                            )}
-                                                        </p>
-                                                        <p className="text-sm font-semibold">
-                                                            Rp{' '}
-                                                            {item.subtotal.toLocaleString(
-                                                                'id-ID',
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="border-t pt-4">
-                                            <div className="flex justify-between text-sm">
-                                                <span>Subtotal</span>
-                                                <span>
-                                                    Rp{' '}
-                                                    {total.toLocaleString(
-                                                        'id-ID',
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <div className="mt-2 flex justify-between font-bold">
-                                                <span>Total</span>
-                                                <span className="text-lg">
-                                                    Rp{' '}
-                                                    {total.toLocaleString(
-                                                        'id-ID',
-                                                    )}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Button
-                                                type="submit"
-                                                className="w-full"
-                                                disabled={
-                                                    loading ||
-                                                    cartItems.length === 0
-                                                }
-                                                onClick={handleSubmit}
-                                            >
-                                                {loading
-                                                    ? 'Memproses...'
-                                                    : 'Buat Pesanan'}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="w-full"
-                                                disabled={loading}
-                                                onClick={() =>
-                                                    router.visit(
-                                                        '/customer/products',
-                                                    )
-                                                }
-                                            >
-                                                Kembali Belanja
-                                            </Button>
-                                        </div>
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
+                        <OrderSummary
+                            cartItems={cartItems}
+                            total={total}
+                            loading={loading}
+                            onSubmit={() => handleSubmit()}
+                        />
                     </div>
                 </div>
             </div>

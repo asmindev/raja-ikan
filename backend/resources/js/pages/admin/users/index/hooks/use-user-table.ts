@@ -15,7 +15,7 @@ export function useUserTable() {
     const [role, setRole] = useState(filters.role || '');
     const [perPage, setPerPage] = useState(filters.per_page || 10);
 
-    const  table = useReactTable({
+    const table = useReactTable({
         data: users.data,
         columns,
         getCoreRowModel: getCoreRowModel(),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' as material show Material, InkWell;
+import 'package:flutter/material.dart' as material show Material, InkWell, RefreshIndicator;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -455,20 +455,23 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 
     return Stack(
       children: [
-        ListView.separated(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-          itemCount: orderState.orders.length,
-          separatorBuilder: (_, __) => const Gap(12),
-          itemBuilder: (context, index) {
-            final order = orderState.orders[index];
-            return SelectableOrderCard(
-              order: order,
-              isSelected: _selectedOrderIds.contains(order.id),
-              isSelectionMode: _isSelectionMode,
-              onTap: () => _toggleSelection(order.id),
-              onLongPress: () => _toggleSelection(order.id),
-            );
-          },
+        material.RefreshIndicator(
+          onRefresh: () async => _loadOrders(),
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+            itemCount: orderState.orders.length,
+            separatorBuilder: (_, __) => const Gap(12),
+            itemBuilder: (context, index) {
+              final order = orderState.orders[index];
+              return SelectableOrderCard(
+                order: order,
+                isSelected: _selectedOrderIds.contains(order.id),
+                isSelectionMode: _isSelectionMode,
+                onTap: () => _toggleSelection(order.id),
+                onLongPress: () => _toggleSelection(order.id),
+              );
+            },
+          ),
         ),
 
         // Floating Action Button for optimization
@@ -592,6 +595,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return _ActiveRouteTimeline(
       route: activeRouteState.route!,
       orders: activeRouteState.orders,
+      onRefresh: () => ref.read(activeRouteProvider.notifier).fetchActiveRoute(),
     );
   }
 
@@ -614,20 +618,23 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: orderState.orders.length,
-      separatorBuilder: (_, __) => const Gap(12),
-      itemBuilder: (context, index) {
-        final order = orderState.orders[index];
-        return OrderCard(
-          order: order,
-          status: 'Delivered',
-          completedAt: order.deliveryAt != null
-              ? DateFormat('HH:mm a').format(order.deliveryAt!)
-              : null,
-        );
-      },
+    return material.RefreshIndicator(
+      onRefresh: () async => _loadOrders(),
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: orderState.orders.length,
+        separatorBuilder: (_, __) => const Gap(12),
+        itemBuilder: (context, index) {
+          final order = orderState.orders[index];
+          return OrderCard(
+            order: order,
+            status: 'Delivered',
+            completedAt: order.deliveryAt != null
+                ? DateFormat('HH:mm a').format(order.deliveryAt!)
+                : null,
+          );
+        },
+      ),
     );
   }
 }
@@ -676,15 +683,19 @@ class _SearchTextFieldState extends State<_SearchTextField> {
 class _ActiveRouteTimeline extends StatelessWidget {
   final DeliveryRoute route;
   final List<OrderModel> orders;
+  final Future<void> Function() onRefresh;
 
-  const _ActiveRouteTimeline({required this.route, required this.orders});
+  const _ActiveRouteTimeline({required this.route, required this.orders, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         // Timeline view
-        OrderTimeline(orders: orders),
+        material.RefreshIndicator(
+          onRefresh: onRefresh,
+          child: OrderTimeline(orders: orders),
+        ),
 
         // Floating button at bottom
         Positioned(

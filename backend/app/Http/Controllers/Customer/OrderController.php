@@ -46,7 +46,7 @@ class OrderController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('user/orders/index', [
+        return Inertia::render('user/orders/index/index', [
             'orders' => OrderResource::collection($orders),
             'filters' => $request->only(['status', 'search']),
         ]);
@@ -61,7 +61,7 @@ class OrderController extends Controller
 
         $order->load(['orderLines.product', 'driver', 'statusLogs.changedBy']);
 
-        return Inertia::render('user/orders/show', [
+        return Inertia::render('user/orders/show/index', [
             'order' => (new OrderResource($order))->resolve(),
         ]);
     }

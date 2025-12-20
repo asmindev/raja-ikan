@@ -1,9 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Clock, Package, Truck, XCircle } from 'lucide-react';
+import {
+    AlertCircle,
+    CheckCircle,
+    Clock,
+    Package,
+    Truck,
+    XCircle,
+} from 'lucide-react';
 
 interface Stats {
     total_orders: number;
     pending_orders: number;
+    needs_confirmation: number;
     delivering_orders: number;
     completed_orders: number;
     cancelled_orders: number;
@@ -15,7 +23,7 @@ interface OrdersStatsProps {
 
 export function OrdersStats({ stats }: OrdersStatsProps) {
     return (
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-5">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-6">
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-sm">
@@ -25,6 +33,19 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
                 </CardHeader>
                 <CardContent>
                     <p className="text-2xl font-bold">{stats.total_orders}</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                        <AlertCircle className="h-4 w-4 text-orange-500" />
+                        Need Confirm
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold text-orange-500">
+                        {stats.needs_confirmation}
+                    </p>
                 </CardContent>
             </Card>
             <Card>

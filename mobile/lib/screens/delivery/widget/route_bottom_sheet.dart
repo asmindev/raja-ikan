@@ -452,10 +452,13 @@ class RouteBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get safe area padding untuk bottom
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Positioned(
       left: 16,
       right: 16,
-      bottom: 16,
+      bottom: 16 + bottomPadding, // Tambah padding bottom untuk navigation bar
       child: Row(
         children: [
           // Drawer button - Info Icon
@@ -586,25 +589,33 @@ class RouteBottomSheet extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        color: Color(0xFFFFFFFF),
-                        size: 22,
-                      ),
-                      Gap(10),
-                      Text(
-                        'Sedang Mengantar - Live Tracking Aktif',
-                        style: TextStyle(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.location_on,
                           color: Color(0xFFFFFFFF),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          size: 22,
                         ),
-                      ),
-                    ],
+                        const Gap(10),
+                        Flexible(
+                          child: Text(
+                            'Sedang Mengantar - Live Tracking Aktif',
+                            style: const TextStyle(
+                              color: Color(0xFFFFFFFF),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
