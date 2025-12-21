@@ -1,0 +1,150 @@
+# ============================================
+# GLOBAL
+# ============================================
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-*
+
+# ============================================
+# BACKEND (Laravel)
+# ============================================
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/.env.backup
+backend/.env.production
+backend/.phpunit.result.cache
+backend/Homestead.json
+backend/Homestead.yaml
+backend/auth.json
+backend/npm-debug.log
+backend/yarn-error.log
+backend/.fleet
+backend/.phpunit.cache
+backend/storage/*.key
+backend/storage/app/*
+!backend/storage/app/.gitignore
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/testing/*
+!backend/storage/framework/testing/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/public/storage
+backend/public/hot
+backend/public/build
+
+# ============================================
+# MOBILE (Flutter)
+# ============================================
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/flutter_*.png
+mobile/linked_*.ds
+mobile/unlinked.ds
+mobile/unlinked_spec.ds
+mobile/.fvm/
+mobile/coverage/
+mobile/lib/generated_plugin_registrant.dart
+mobile/.metadata
+mobile/pubspec.lock
+
+# Android
+mobile/android/app/debug
+mobile/android/app/profile
+mobile/android/app/release
+mobile/android/.gradle/
+mobile/android/gradle/
+mobile/android/gradlew
+mobile/android/gradlew.bat
+mobile/android/local.properties
+mobile/android/**/GeneratedPluginRegistrant.java
+mobile/android/key.properties
+mobile/android/.gradle
+mobile/android/captures/
+mobile/android/output.json
+
+# iOS
+mobile/ios/Flutter/App.framework
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/app.flx
+mobile/ios/Flutter/app.zip
+mobile/ios/Flutter/flutter_assets/
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/ios/ServiceDefinitions.json
+mobile/ios/Runner/GeneratedPluginRegistrant.*
+mobile/ios/.symlinks/
+mobile/ios/Pods/
+mobile/ios/Podfile.lock
+mobile/ios/.generated/
+
+# ============================================
+# OPTIMIZATION (Python)
+# ============================================
+optimization/__pycache__/
+optimization/*.pyc
+optimization/*.pyo
+optimization/*.pyd
+optimization/.Python
+optimization/env/
+optimization/.venv/
+optimization/venv/
+optimization/ENV/
+optimization/env.bak/
+optimization/venv.bak/
+optimization/pip-log.txt
+optimization/pip-delete-this-directory.txt
+optimization/.tox/
+optimization/.coverage
+optimization/.coverage.*
+optimization/.pytest_cache/
+optimization/htmlcov/
+optimization/.mypy_cache/
+optimization/.dmypy.json
+optimization/dmypy.json
+optimization/algorithm/cache/*.pkl
+optimization/algorithm/cache/*.joblib
+optimization/logs/*.log
+
+# ============================================
+# WA-GATEWAY (Node.js/TypeScript)
+# ============================================
+wa-gateaway/node_modules/
+wa-gateaway/dist/
+wa-gateaway/.env
+wa-gateaway/.env.local
+wa-gateaway/.env.*.local
+wa-gateaway/npm-debug.log*
+wa-gateaway/yarn-debug.log*
+wa-gateaway/yarn-error.log*
+wa-gateaway/logs/*.log
+wa-gateaway/sesi/*.json
+wa-gateaway/sesi/*.data.json
+wa-gateaway/.pnp.*
+
+# ============================================
+# TEMP & BUILD
+# ============================================
+*.tmp
+*.temp
+dist/
+build/
+out/
+.cache/
