@@ -1,19 +1,20 @@
+import { useCart } from '@/contexts/cart-context';
 import CustomerLayout from '@/layouts/customer-layout';
 import { Head, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DeliveryForm } from './components/delivery-form';
 import { NotesForm } from './components/notes-form';
 import { OrderSummary } from './components/order-summary';
 import { PaymentForm } from './components/payment-form';
-import { CartItem, User } from './components/types';
+import { User } from './components/types';
 
 interface Props {
     user: User;
 }
 
 export default function CreateOrder({ user }: Props) {
+    const { items: cartItems, total, clearCart } = useCart();
     const [loading, setLoading] = useState(false);
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [formData, setFormData] = useState({
         address: user.address || '',
         payment_method: 'cash',
@@ -22,16 +23,6 @@ export default function CreateOrder({ user }: Props) {
         longitude: user.longitude || 0,
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
-
-    // Load cart from localStorage
-    useEffect(() => {
-        const storedCart = localStorage.getItem('cart');
-        if (storedCart) {
-            setCartItems(JSON.parse(storedCart));
-        }
-    }, []);
-
-    const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     const handleSubmit = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -48,15 +39,15 @@ export default function CreateOrder({ user }: Props) {
         const orderData = {
             ...formData,
             items: cartItems.map((item) => ({
-                product_id: item.product.id,
+                product_id: item.product_id,
                 quantity: item.quantity,
             })),
         };
 
         router.post('/customer/orders', orderData, {
             onSuccess: () => {
-                // Clear cart
-                localStorage.removeItem('cart');
+                // Clear cart from context
+                clearCart();
                 // Redirect handled by backend
             },
             onError: (err) => {

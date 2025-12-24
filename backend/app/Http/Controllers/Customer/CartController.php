@@ -75,4 +75,29 @@ class CartController extends Controller
 
         return redirect()->back()->with('success', 'Product dihapus dari cart');
     }
+
+    public function sync(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        $user = $request->user();
+
+        // Delete existing cart
+        Cart::where('user_id', $user->id)->delete();
+
+        // Insert new items
+        foreach ($request->items as $item) {
+            Cart::create([
+                'user_id' => $user->id,
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+            ]);
+        }
+
+        return redirect()->route('customer.orders.create');
+    }
 }

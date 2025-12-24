@@ -13,14 +13,19 @@ class Product extends Model
     protected $fillable = [
         'name',
         'description',
+        'category',
         'price',
+        'stock',
         'image',
         'is_active',
+        'is_featured',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'stock' => 'integer',
         'is_active' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     protected $appends = ['image'];

@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CartItem as ContextCartItem } from '@/contexts/cart-context';
 import { router } from '@inertiajs/react';
 import { ShoppingCart } from 'lucide-react';
-import { CartItem } from './types';
 
 interface OrderSummaryProps {
-    cartItems: CartItem[];
+    cartItems: ContextCartItem[];
     total: number;
     loading: boolean;
     onSubmit: () => void;
@@ -34,7 +34,10 @@ export function OrderSummary({
                     <>
                         <div className="space-y-3">
                             {cartItems.map((item) => (
-                                <div key={item.id} className="flex gap-3">
+                                <div
+                                    key={item.product_id}
+                                    className="flex gap-3"
+                                >
                                     <img
                                         src={
                                             item.product.image ||
@@ -55,9 +58,10 @@ export function OrderSummary({
                                         </p>
                                         <p className="text-sm font-semibold">
                                             Rp{' '}
-                                            {item.subtotal.toLocaleString(
-                                                'id-ID',
-                                            )}
+                                            {(
+                                                item.product.price *
+                                                item.quantity
+                                            ).toLocaleString('id-ID')}
                                         </p>
                                     </div>
                                 </div>

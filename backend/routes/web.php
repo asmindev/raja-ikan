@@ -15,12 +15,27 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     $products = \App\Models\Product::where('is_active', true)
-        ->select('id', 'name', 'description', 'price', 'image')
+        ->select('id', 'name', 'description', 'price', 'image', 'category', 'stock', 'is_featured')
+        ->latest()
         ->limit(12)
         ->get();
 
-    return Inertia::render('homepage/welcome', [
+    $categories = \App\Models\Product::where('is_active', true)
+        ->whereNotNull('category')
+        ->select('category')
+        ->distinct()
+        ->pluck('category')
+        ->filter();
+
+    $featured = \App\Models\Product::where('is_active', true)
+        ->where('is_featured', true)
+        ->limit(4)
+        ->get();
+
+    return Inertia::render('homepage/index', [
         'products' => $products,
+        'categories' => $categories,
+        'featured' => $featured,
     ]);
 })->name('home');
 
@@ -86,6 +101,8 @@ Route::middleware(['auth', 'verified'])->prefix('customer')->group(function () {
     // Cart
     Route::get('/cart', [CartController::class, 'index'])
         ->name('customer.cart.index');
+    Route::post('/cart/sync', [CartController::class, 'sync'])
+        ->name('customer.cart.sync');
     Route::post('/cart/add', [CartController::class, 'add'])
         ->name('customer.cart.add');
     Route::patch('/cart/{cart}', [CartController::class, 'update'])

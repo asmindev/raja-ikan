@@ -43,7 +43,7 @@ export default function CustomerLayout({
             <main className="min-w-0 flex-1">
                 <header className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-4">
                     <div className="flex flex-1 items-center justify-between">
-                        <div>
+                        <div className="flex items-center gap-2">
                             <SidebarTrigger />
                             <Separator
                                 orientation="vertical"

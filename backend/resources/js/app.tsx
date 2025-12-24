@@ -3,6 +3,7 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import { CartProvider } from './contexts/cart-context';
 import { MessagesProvider } from './contexts/messages-context';
 import { initializeTheme } from './hooks/use-appearance';
 // --- TAMBAHKAN BAGIAN INI ---
@@ -28,10 +29,12 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <MessagesProvider>
-                <Toaster position="top-right" />
-                <App {...props} />
-            </MessagesProvider>,
+            <CartProvider>
+                <MessagesProvider>
+                    <Toaster position="top-right" />
+                    <App {...props} />
+                </MessagesProvider>
+            </CartProvider>,
         );
     },
     progress: {
