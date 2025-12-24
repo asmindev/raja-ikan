@@ -1,4 +1,3 @@
-import { LocationPicker } from '@/components/location-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -162,23 +161,6 @@ export function UserForm({
                                     </p>
                                 )}
                             </div>
-                        </div>
-
-                        {/* Location Section */}
-                        <div className="space-y-4 border-t pt-6">
-                            <LocationPicker
-                                latitude={data.latitude}
-                                longitude={data.longitude}
-                                onLocationChange={(lat, lng) => {
-                                    setData('latitude', lat);
-                                    setData('longitude', lng);
-                                }}
-                            />
-                            {(errors.latitude || errors.longitude) && (
-                                <p className="text-sm text-red-500">
-                                    {errors.latitude || errors.longitude}
-                                </p>
-                            )}
                         </div>
 
                         {/* Security Section */}

@@ -29,6 +29,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             ],
 
             'phone' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ])->validateWithBag('updateProfileInformation');
 
         if (
@@ -41,6 +44,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'phone' => $input['phone'],
+                'address' => $input['address'] ?? $user->address,
+                'latitude' => $input['latitude'] ?? $user->latitude,
+                'longitude' => $input['longitude'] ?? $user->longitude,
             ])->save();
         }
     }
@@ -56,6 +62,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'name' => $input['name'],
             'email' => $input['email'],
             'phone' => $input['phone'],
+            'address' => $input['address'] ?? $user->address,
+            'latitude' => $input['latitude'] ?? $user->latitude,
+            'longitude' => $input['longitude'] ?? $user->longitude,
             'email_verified_at' => null,
         ])->save();
 

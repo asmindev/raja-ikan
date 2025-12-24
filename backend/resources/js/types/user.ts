@@ -6,6 +6,8 @@ export interface User {
     role: 'admin' | 'customer' | 'driver';
     phone?: string | null;
     address?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
     last_login: string | null;
     created_at: string;
     updated_at: string;

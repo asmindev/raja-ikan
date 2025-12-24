@@ -1,13 +1,22 @@
 import {
+    ChevronsUpDown,
     GalleryVerticalEnd,
     LayoutDashboard,
     Package,
+    Settings,
     ShoppingCart,
     Truck,
-    ChevronsUpDown,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Sidebar,
     SidebarContent,
@@ -21,14 +30,6 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link, usePage } from '@inertiajs/react';
 
 const items = [
@@ -152,7 +153,9 @@ export function CustomerSidebar() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                                side={state === 'collapsed' ? 'right' : 'bottom'}
+                                side={
+                                    state === 'collapsed' ? 'right' : 'bottom'
+                                }
                                 align="end"
                                 sideOffset={4}
                             >
@@ -164,6 +167,12 @@ export function CustomerSidebar() {
                                 <DropdownMenuItem asChild>
                                     <Link href="/customer/orders">
                                         My Orders
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/user/profile">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        Profile Settings
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />

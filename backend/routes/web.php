@@ -28,6 +28,15 @@ Route::get('/optimize', function () {
     return Inertia::render('optimize/index');
 })->name('optimize');
 
+// Profile routes (authenticated users)
+Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
+    Route::get('/profile', function () {
+        return Inertia::render('profile/edit/index');
+    })->name('profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password.update');
+});
+
 Route::prefix('admin')->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');

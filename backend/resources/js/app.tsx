@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { MessagesProvider } from './contexts/messages-context';
 import { initializeTheme } from './hooks/use-appearance';
 // --- TAMBAHKAN BAGIAN INI ---
+import { Toaster } from 'sonner';
 import { route as routeFn } from 'ziggy-js';
 import { Ziggy } from './ziggy'; // Pastikan file ini ada (hasil generate artisan)
 
@@ -28,6 +29,7 @@ createInertiaApp({
 
         root.render(
             <MessagesProvider>
+                <Toaster position="top-right" />
                 <App {...props} />
             </MessagesProvider>,
         );

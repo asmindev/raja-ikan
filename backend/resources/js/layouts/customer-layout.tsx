@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/components/mode-toggle';
 import { CustomerSidebar } from '@/components/sidebar/customer-sidebar';
 import {
     Breadcrumb,
@@ -41,41 +42,51 @@ export default function CustomerLayout({
             <CustomerSidebar />
             <main className="min-w-0 flex-1">
                 <header className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-4">
-                    <SidebarTrigger />
-                    <Separator
-                        orientation="vertical"
-                        className="mr-2 data-[orientation=vertical]:h-4"
-                    />
-                    {breadcrumbs && (
-                        <Breadcrumb>
-                            <BreadcrumbList
-                                aria-label="Breadcrumb"
-                                className="space-x-2"
-                            >
-                                {breadcrumbs.map((crumb, index) => (
-                                    <Fragment key={crumb.label}>
-                                        <BreadcrumbItem>
-                                            {index ===
-                                            breadcrumbs.length - 1 ? (
-                                                <BreadcrumbPage>
-                                                    {crumb.label}
-                                                </BreadcrumbPage>
-                                            ) : (
-                                                <BreadcrumbLink asChild>
-                                                    <Link href={crumb.url}>
-                                                        {crumb.label}
-                                                    </Link>
-                                                </BreadcrumbLink>
-                                            )}
-                                        </BreadcrumbItem>
-                                        {index < breadcrumbs.length - 1 && (
-                                            <BreadcrumbSeparator />
-                                        )}
-                                    </Fragment>
-                                ))}
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                    )}
+                    <div className="flex flex-1 items-center justify-between">
+                        <div>
+                            <SidebarTrigger />
+                            <Separator
+                                orientation="vertical"
+                                className="mr-2 data-[orientation=vertical]:h-4"
+                            />
+                            {breadcrumbs && (
+                                <Breadcrumb>
+                                    <BreadcrumbList
+                                        aria-label="Breadcrumb"
+                                        className="space-x-2"
+                                    >
+                                        {breadcrumbs.map((crumb, index) => (
+                                            <Fragment key={crumb.label}>
+                                                <BreadcrumbItem>
+                                                    {index ===
+                                                    breadcrumbs.length - 1 ? (
+                                                        <BreadcrumbPage>
+                                                            {crumb.label}
+                                                        </BreadcrumbPage>
+                                                    ) : (
+                                                        <BreadcrumbLink asChild>
+                                                            <Link
+                                                                href={crumb.url}
+                                                            >
+                                                                {crumb.label}
+                                                            </Link>
+                                                        </BreadcrumbLink>
+                                                    )}
+                                                </BreadcrumbItem>
+                                                {index <
+                                                    breadcrumbs.length - 1 && (
+                                                    <BreadcrumbSeparator />
+                                                )}
+                                            </Fragment>
+                                        ))}
+                                    </BreadcrumbList>
+                                </Breadcrumb>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <ModeToggle />
+                        </div>
+                    </div>
                 </header>
                 {children}
             </main>

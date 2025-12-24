@@ -38,7 +38,13 @@ export default function Show({ user }: Props) {
     );
 
     useEffect(() => {
-        // If user has address and is a customer, try to geocode the address
+        // Prioritize stored coordinates
+        if (user.latitude && user.longitude) {
+            setCoordinates([user.latitude, user.longitude]);
+            return;
+        }
+
+        // Fallback: If user has address and is a customer, try to geocode (mocked for now)
         if (user.role === 'customer' && user.address) {
             // For now, use Kendari coordinates as default
             // TODO: Implement actual geocoding service

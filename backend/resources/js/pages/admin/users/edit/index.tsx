@@ -21,6 +21,8 @@ export default function Edit({ user }: Props) {
         email: user.email || '',
         phone: user.phone || '',
         address: user.address || '',
+        latitude: user.latitude || undefined,
+        longitude: user.longitude || undefined,
         role: user.role || 'customer',
         password: '',
         password_confirmation: '',
@@ -52,10 +54,15 @@ export default function Edit({ user }: Props) {
                         onSubmit={submit}
                     />
 
-                    {/* Show map only for customers with address */}
-                    {data.role === 'customer' && data.address && (
+                    {/* Show map only for customers */}
+                    {data.role === 'customer' && (
                         <UserLocationMap
-                            userName={data.name}
+                            latitude={data.latitude}
+                            longitude={data.longitude}
+                            onLocationChange={(lat, lng) => {
+                                setData('latitude', lat);
+                                setData('longitude', lng);
+                            }}
                             address={data.address}
                         />
                     )}

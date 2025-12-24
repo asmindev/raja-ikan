@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('order_status_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'delivering', 'completed', 'cancelled']);
+            $table->enum('status', ['pending', 'confirmed', 'assigned', 'delivering', 'completed', 'cancelled']);
             $table->text('notes')->nullable()->comment('Catatan perubahan status');
             $table->foreignId('changed_by')->nullable()->constrained('users')->onDelete('set null')
                 ->comment('User yang mengubah status (admin/driver)');

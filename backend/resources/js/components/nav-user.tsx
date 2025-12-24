@@ -1,4 +1,4 @@
-import { ChevronsUpDown, LogOut } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -65,6 +65,15 @@ export function NavUser({ user }: NavUserProps) {
                         align="end"
                         sideOffset={4}
                     >
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/user/profile"
+                                className="w-full cursor-pointer"
+                            >
+                                <Settings className="mr-2 size-4" />
+                                Profile Settings
+                            </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link
                                 href="/logout"

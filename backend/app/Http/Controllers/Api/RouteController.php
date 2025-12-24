@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Route;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -111,7 +112,7 @@ class RouteController extends Controller
                 })
                 ->get();
 
-            \Illuminate\Support\Facades\Log::info('Orders found', ['count' => $orders->count(), 'orders' => $orders->toArray()]);
+            Log::info('Orders found', ['count' => $orders->count(), 'orders' => $orders->toArray()]);
 
             if ($orders->isEmpty()) {
                 return response()->json([
@@ -569,7 +570,7 @@ class RouteController extends Controller
     /**
      * Start navigation (active -> delivering)
      */
-    public function startNavigation(Route $route, Request $request)
+    public function startNavigation(Route $route, Request $request, WhatsAppService $whatsapp)
     {
         if ($route->driver_id !== $request->user()->id) {
             return response()->json([
@@ -593,6 +594,12 @@ class RouteController extends Controller
         // Update all orders in route to 'delivering'
         $route->orders()->update(['status' => 'delivering']);
 
+        // Send WhatsApp notification to all customers in this route
+        $orders = $route->orders()->with('customer')->get();
+        foreach ($orders as $order) {
+            $whatsapp->sendOrderDelivering($order);
+        }
+
         return response()->json([
             'success' => true,
             'route' => $route,
@@ -603,7 +610,7 @@ class RouteController extends Controller
     /**
      * Complete single order in route
      */
-    public function completeOrder(Order $order, Request $request)
+    public function completeOrder(Order $order, Request $request, WhatsAppService $whatsapp)
     {
         if ($order->driver_id !== $request->user()->id) {
             return response()->json([
@@ -616,6 +623,9 @@ class RouteController extends Controller
             'status' => 'completed',
             'delivery_at' => now(),
         ]);
+
+        // Send WhatsApp notification to customer
+        $whatsapp->sendOrderCompleted($order);
 
         return response()->json([
             'success' => true,

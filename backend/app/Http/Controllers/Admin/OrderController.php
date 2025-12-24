@@ -8,6 +8,7 @@ use App\Models\OrderLine;
 use App\Models\OrderStatusLog;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -134,7 +135,7 @@ class OrderController extends Controller
     /**
      * Store a newly created order
      */
-    public function store(Request $request)
+    public function store(Request $request, WhatsAppService $whatsapp)
     {
         $validated = $request->validate([
             'customer_id' => 'required|exists:users,id',
@@ -182,6 +183,17 @@ class OrderController extends Controller
                     'price' => $line['price'],
                 ]);
             }
+
+            // Log status confirmed
+            OrderStatusLog::create([
+                'order_id' => $order->id,
+                'status' => 'confirmed',
+                'changed_by' => auth()->id(),
+                'notes' => 'Order dibuat dan dikonfirmasi oleh admin',
+            ]);
+
+            // Send WhatsApp notification to customer
+            $whatsapp->sendOrderConfirmed($order);
 
             DB::commit();
 
@@ -318,7 +330,7 @@ class OrderController extends Controller
     /**
      * Confirm pending order
      */
-    public function confirm(Order $order)
+    public function confirm(Order $order, WhatsAppService $whatsapp)
     {
         try {
             if ($order->confirmed_at) {
@@ -336,6 +348,9 @@ class OrderController extends Controller
                 'changed_by' => auth()->id(),
                 'notes' => 'Order dikonfirmasi oleh admin',
             ]);
+
+            // Send WhatsApp notification to customer
+            $whatsapp->sendOrderConfirmed($order);
 
             return back()->with('success', 'Order berhasil dikonfirmasi');
         } catch (\Exception $e) {
