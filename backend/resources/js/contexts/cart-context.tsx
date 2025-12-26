@@ -45,6 +45,7 @@ export function CartProvider({ children }: PropsWithChildren) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const total = items.reduce(
         (acc, item) => acc + item.product.price * item.quantity,
@@ -56,23 +57,29 @@ export function CartProvider({ children }: PropsWithChildren) {
         const saved = localStorage.getItem('cart');
         if (saved) {
             try {
-                setItems(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+                // Ensure product_id exists for each item
+                const validated = parsed
+                    .map((item: any) => ({
+                        ...item,
+                        product_id: item.product_id || item.product?.id,
+                    }))
+                    .filter((item: any) => item.product_id);
+                setItems(validated);
             } catch (e) {
                 console.error('Failed to parse cart from localStorage:', e);
                 localStorage.removeItem('cart');
             }
         }
+        setIsInitialized(true);
     }, []);
 
     // Persist to local storage whenever items change
     useEffect(() => {
-        // Format items with subtotal for compatibility with order/create page
-        const formattedItems = items.map((item) => ({
-            ...item,
-            subtotal: item.product.price * item.quantity,
-        }));
-        localStorage.setItem('cart', JSON.stringify(formattedItems));
-    }, [items]);
+        if (isInitialized) {
+            localStorage.setItem('cart', JSON.stringify(items));
+        }
+    }, [items, isInitialized]);
 
     const openCart = () => setIsOpen(true);
     const closeCart = () => setIsOpen(false);
@@ -91,8 +98,6 @@ export function CartProvider({ children }: PropsWithChildren) {
             }
             return [...prev, { product_id: product.id, product, quantity }];
         });
-        // toast.success('Produk ditambahkan ke keranjang');
-        // Note: We do NOT open the cart automatically anymore
     };
 
     const removeFromCart = (productId: number) => {

@@ -33,7 +33,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
             'role' => fake()->randomElement(['admin', 'customer', 'driver']),
-            'phone' => fake()->phoneNumber(),
+            'phone' => fake()->unique()->numerify('08##########'), // Format Indonesia: 08xxxxxxxxxx
             'address' => fake()->address(),
             'is_active' => fake()->boolean(90), // 90% chance true
             // Default koordinat Kendari untuk semua user

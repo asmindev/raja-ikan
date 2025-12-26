@@ -1,8 +1,14 @@
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useCart } from '@/contexts/cart-context';
 import { Link, usePage } from '@inertiajs/react';
-import { Fish, ShoppingBag } from 'lucide-react';
+import { Fish, ShoppingBag, User } from 'lucide-react';
 
 export function Navbar() {
     const { props } = usePage();
@@ -22,7 +28,7 @@ export function Navbar() {
                 </Link>
 
                 {/* Actions */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 md:gap-4">
                     <Button
                         variant="ghost"
                         size="icon"
@@ -39,40 +45,93 @@ export function Navbar() {
 
                     <ModeToggle />
 
-                    {user ? (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-                        >
-                            <Link
-                                href={
-                                    user.role === 'admin'
-                                        ? '/admin/dashboard'
-                                        : '/customer/dashboard'
-                                }
-                            >
-                                Dashboard
-                            </Link>
-                        </Button>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <Link
-                                href="/login"
-                                className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-                            >
-                                Login
-                            </Link>
+                    {/* Desktop Auth */}
+                    <div className="hidden items-center gap-2 md:flex">
+                        {user ? (
                             <Button
+                                variant="ghost"
                                 size="sm"
                                 asChild
-                                className="rounded-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                             >
-                                <Link href="/register">Get Started</Link>
+                                <Link
+                                    href={
+                                        user.role === 'admin'
+                                            ? '/admin/dashboard'
+                                            : '/customer/dashboard'
+                                    }
+                                >
+                                    Dashboard
+                                </Link>
                             </Button>
-                        </div>
-                    )}
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                                >
+                                    Login
+                                </Link>
+                                <Button
+                                    size="sm"
+                                    asChild
+                                    className="rounded-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                >
+                                    <Link href="/register">Get Started</Link>
+                                </Button>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Mobile Auth Dropdown */}
+                    <div className="md:hidden">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                                >
+                                    <User className="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {user ? (
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            href={
+                                                user.role === 'admin'
+                                                    ? '/admin/dashboard'
+                                                    : '/customer/dashboard'
+                                            }
+                                            className="w-full cursor-pointer"
+                                        >
+                                            Dashboard
+                                        </Link>
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <>
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href="/login"
+                                                className="w-full cursor-pointer"
+                                            >
+                                                Login
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href="/register"
+                                                className="w-full cursor-pointer"
+                                            >
+                                                Get Started
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
             </div>
         </nav>

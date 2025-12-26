@@ -6,12 +6,21 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Api\OrderController as ApiOrderController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// Registration routes
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [RegisterController::class, 'register'])->name('auth.register');
+    Route::post('/send-otp', [RegisterController::class, 'sendOtp'])->name('auth.send-otp');
+    Route::post('/verify-otp', [RegisterController::class, 'verifyOtp'])->name('auth.verify-otp');
+    Route::get('/confirm-account', [RegisterController::class, 'showConfirmAccount'])->name('auth.confirm-account');
+});
 
 Route::get('/', function () {
     $products = \App\Models\Product::where('is_active', true)
@@ -44,7 +53,7 @@ Route::get('/optimize', function () {
 })->name('optimize');
 
 // Profile routes (authenticated users)
-Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
+Route::middleware(['auth', 'verified', 'active'])->prefix('user')->group(function () {
     Route::get('/profile', function () {
         return Inertia::render('profile/edit/index');
     })->name('profile.edit');
@@ -52,7 +61,8 @@ Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
     Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password.update');
 });
 
-Route::prefix('admin')->group(function () {
+// Admin routes (role: admin)
+Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');
     Route::get('users', [UserController::class, 'index'])->name('admin.users.index');
@@ -84,7 +94,7 @@ Route::prefix('admin')->group(function () {
 });
 
 // Customer routes (role: customer)
-Route::middleware(['auth', 'verified'])->prefix('customer')->group(function () {
+Route::middleware(['auth', 'verified', 'active', 'role:customer'])->prefix('customer')->group(function () {
     // Dashboard
 
     // redirect /customer to /customer/dashboard
@@ -123,6 +133,32 @@ Route::middleware(['auth', 'verified'])->prefix('customer')->group(function () {
         ->name('customer.orders.cancel');
 });
 
+// Driver routes (role: driver)
+Route::middleware(['auth', 'verified', 'active', 'role:driver'])->prefix('driver')->group(function () {
+    Route::redirect('/', '/driver/dashboard');
+
+    Route::get('/dashboard', [\App\Http\Controllers\Driver\DashboardController::class, 'index'])
+        ->name('driver.dashboard.index');
+
+    Route::get('/orders', [\App\Http\Controllers\Driver\OrderController::class, 'index'])
+        ->name('driver.orders.index');
+
+    Route::get('/orders/{order}', [\App\Http\Controllers\Driver\OrderController::class, 'show'])
+        ->name('driver.orders.show');
+
+    Route::post('/orders/{order}/accept', [\App\Http\Controllers\Driver\OrderController::class, 'accept'])
+        ->name('driver.orders.accept');
+
+    Route::post('/orders/{order}/start', [\App\Http\Controllers\Driver\OrderController::class, 'start'])
+        ->name('driver.orders.start');
+
+    Route::post('/orders/{order}/complete', [\App\Http\Controllers\Driver\OrderController::class, 'complete'])
+        ->name('driver.orders.complete');
+
+    Route::get('/routes/active', [\App\Http\Controllers\Driver\RouteController::class, 'active'])
+        ->name('driver.routes.active');
+});
+
 Route::prefix('api/v1')->group(function () {
     // Public auth endpoints
     Route::post('auth/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
@@ -134,23 +170,28 @@ Route::prefix('api/v1')->group(function () {
         Route::post('auth/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
         Route::post('auth/logout-all', [\App\Http\Controllers\Api\AuthController::class, 'logoutAll']);
 
-        // Orders
+        // Orders (all authenticated users)
         Route::get('orders', [ApiOrderController::class, 'index'])->name('api.v1.orders.index');
         Route::get('orders/{id}', [ApiOrderController::class, 'show'])->name('api.v1.orders.show');
-        Route::post('orders', [ApiOrderController::class, 'store'])->name('api.v1.orders.store');
+        Route::post('orders', [ApiOrderController::class, 'store'])->name('api.v1.orders.store')
+            ->middleware('can:place-orders');
 
-        // Dashboard
-        Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
-        // Routes (Driver only)
-        Route::get('routes/pending-orders', [\App\Http\Controllers\Api\RouteController::class, 'pendingOrders']);
-        Route::get('routes/active', [\App\Http\Controllers\Api\RouteController::class, 'active']);
-        Route::post('routes/draft', [\App\Http\Controllers\Api\RouteController::class, 'createDraft']);
-        Route::post('routes/{route}/optimize-and-start', [\App\Http\Controllers\Api\RouteController::class, 'optimizeAndStart']);
-        Route::post('routes/optimize', [\App\Http\Controllers\Api\RouteController::class, 'createAndOptimize']);
-        Route::post('routes/{route}/start', [\App\Http\Controllers\Api\RouteController::class, 'start']);
-        Route::post('routes/{route}/start-navigation', [\App\Http\Controllers\Api\RouteController::class, 'startNavigation']);
-        Route::put('orders/{order}/complete', [\App\Http\Controllers\Api\RouteController::class, 'completeOrder']);
-        Route::post('routes/{route}/complete', [\App\Http\Controllers\Api\RouteController::class, 'complete']);
+        // Dashboard (admin and driver)
+        Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats'])
+            ->middleware('can:view-analytics');
+
+        // Driver-only routes
+        Route::middleware('role:driver')->group(function () {
+            Route::get('routes/pending-orders', [\App\Http\Controllers\Api\RouteController::class, 'pendingOrders']);
+            Route::get('routes/active', [\App\Http\Controllers\Api\RouteController::class, 'active']);
+            Route::post('routes/draft', [\App\Http\Controllers\Api\RouteController::class, 'createDraft']);
+            Route::post('routes/{route}/optimize-and-start', [\App\Http\Controllers\Api\RouteController::class, 'optimizeAndStart']);
+            Route::post('routes/optimize', [\App\Http\Controllers\Api\RouteController::class, 'createAndOptimize']);
+            Route::post('routes/{route}/start', [\App\Http\Controllers\Api\RouteController::class, 'start']);
+            Route::post('routes/{route}/start-navigation', [\App\Http\Controllers\Api\RouteController::class, 'startNavigation']);
+            Route::put('orders/{order}/complete', [\App\Http\Controllers\Api\RouteController::class, 'completeOrder']);
+            Route::post('routes/{route}/complete', [\App\Http\Controllers\Api\RouteController::class, 'complete']);
+        });
     });
 
     // Public endpoints (no auth required)

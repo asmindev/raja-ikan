@@ -9,7 +9,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
-    console.log('Product image URL:', product.image);
     return (
         <Card className="overflow-hidden p-0 transition-shadow hover:shadow-lg">
             <CardContent className="p-0">

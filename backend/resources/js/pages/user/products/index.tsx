@@ -1,12 +1,11 @@
+import { useCart } from '@/contexts/cart-context';
 import CustomerLayout, { BreadcrumbItemType } from '@/layouts/customer-layout';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { CartDrawer } from './components/cart-drawer';
 import { CartPanel } from './components/cart-panel';
-import { OrderDialog } from './components/order-dialog';
 import { ProductGrid } from './components/product-grid';
 import { ProductHeader } from './components/product-header';
-import { useCart } from './hooks/use-cart';
 import { CartItem, PaginatedProducts } from './types';
 
 interface Props {
@@ -28,19 +27,23 @@ export default function ProductsIndex({ products, filters }: Props) {
     const isFirstRenderRef = useRef(true);
 
     const {
-        cart,
-        total,
-        isDrawerOpen,
-        setIsDrawerOpen,
-        isOrderDialogOpen,
-        setIsOrderDialogOpen,
+        items,
         addToCart,
         updateQuantity,
-        removeItem,
-        openOrderDialog,
-        itemCount,
-        getCartData,
+        removeFromCart,
+        checkout,
+        total,
     } = useCart();
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // Map global items to local format (add subtotal)
+    const cart = items.map((item) => ({
+        ...item,
+        subtotal: item.product.price * item.quantity,
+    }));
+
+    const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
     useEffect(() => {
         if (isFirstRenderRef.current) {
@@ -90,9 +93,11 @@ export default function ProductsIndex({ products, filters }: Props) {
                         <CartPanel
                             cart={cart}
                             total={total}
-                            onUpdateQuantity={updateQuantity}
-                            onRemove={removeItem}
-                            onOrder={openOrderDialog}
+                            onUpdateQuantity={(id, qty) =>
+                                updateQuantity(id, qty)
+                            }
+                            onRemove={(id) => removeFromCart(id)}
+                            onOrder={checkout}
                         />
                     </div>
                 </div>
@@ -104,18 +109,9 @@ export default function ProductsIndex({ products, filters }: Props) {
                 onOpenChange={setIsDrawerOpen}
                 cart={cart}
                 total={total}
-                onUpdateQuantity={updateQuantity}
-                onRemove={removeItem}
-                onOrder={openOrderDialog}
-            />
-
-            {/* Order Dialog */}
-            <OrderDialog
-                open={isOrderDialogOpen}
-                onOpenChange={setIsOrderDialogOpen}
-                total={total}
-                itemCount={itemCount}
-                getCartData={getCartData}
+                onUpdateQuantity={(id, qty) => updateQuantity(id, qty)}
+                onRemove={(id) => removeFromCart(id)}
+                onOrder={checkout}
             />
 
             {/* Sticky Bottom Cart Bar - Mobile Only */}
@@ -139,7 +135,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                             </div>
                         </button>
                         <button
-                            onClick={openOrderDialog}
+                            onClick={checkout}
                             className="flex-shrink-0 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                         >
                             Pesan

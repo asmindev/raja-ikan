@@ -9,7 +9,11 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import {
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
 import { Fragment } from 'react/jsx-runtime';
 import { toast } from 'sonner';
@@ -40,7 +44,7 @@ export default function CustomerLayout({
     return (
         <SidebarProvider defaultOpen={sidebarState}>
             <CustomerSidebar />
-            <main className="min-w-0 flex-1">
+            <SidebarInset className="overflow-x-hidden">
                 <header className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-4">
                     <div className="flex flex-1 items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -89,7 +93,7 @@ export default function CustomerLayout({
                     </div>
                 </header>
                 {children}
-            </main>
+            </SidebarInset>
         </SidebarProvider>
     );
 }

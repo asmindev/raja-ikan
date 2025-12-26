@@ -165,6 +165,21 @@ class WhatsAppService
     }
 
     /**
+     * Send OTP code via WhatsApp
+     */
+    public function sendOtp(string $phone, string $code): bool
+    {
+        $message = "🔐 *Kode OTP Raja Ikan*\n\n"
+            . "Kode verifikasi Anda adalah:\n\n"
+            . "*{$code}*\n\n"
+            . "Berlaku selama 2 menit.\n"
+            . "⚠️ Jangan bagikan kode ini kepada siapapun!\n\n"
+            . "_Jika Anda tidak merasa meminta kode ini, abaikan pesan ini._";
+
+        return $this->sendMessage($phone, $message);
+    }
+
+    /**
      * Check if WA Gateway is online
      */
     public function checkStatus(): array

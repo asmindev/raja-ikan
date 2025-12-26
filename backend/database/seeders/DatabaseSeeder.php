@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Test User',
                 'password' => 'password',
                 'email_verified_at' => now(),
+                'phone' => '081234567890',
             ]
         );
     }

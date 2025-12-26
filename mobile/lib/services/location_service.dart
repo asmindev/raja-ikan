@@ -76,4 +76,17 @@ class LocationService {
       return null;
     }
   }
+
+  Stream<Position>? getPositionStream() {
+    try {
+      return Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 3, // Update every 3 meters
+        ),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
 }
