@@ -4,7 +4,7 @@ import makeWASocket, {
     proto,
     useMultiFileAuthState,
     type WASocket,
-} from "atexovi-baileys";
+} from "baileys";
 import { Boom } from "@hapi/boom";
 import QRCode from "qrcode";
 import { Logger, baileysLogger } from "../core/logger/Logger";

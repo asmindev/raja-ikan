@@ -8,7 +8,7 @@ import { createServer } from "http";
 import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState
-} from "atexovi-baileys";
+} from "baileys";
 import QRCode from "qrcode";
 
 // src/core/logger/Logger.ts
