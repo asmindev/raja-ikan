@@ -31,7 +31,6 @@
         "hono": "^4.9.9",
         "jimp": "^1.6.0",
         "link-preview-js": "^4.0.0",
-        "mongoose": "^9.0.0",
         "music-metadata": "^11.10.3",
         "qrcode": "^1.5.4",
         "socket.io": "^4.8.1"

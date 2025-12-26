@@ -7,7 +7,6 @@ import { WebSocketService } from "./services/WebSocketService";
 import { Logger } from "./core/logger/Logger";
 import { CONFIG } from "./config/config";
 import { setupRoutes } from "./routes";
-import { mongoDBConnection } from "./database/mongoose";
 
 // Initialize logger
 const logger = new Logger("Application");
@@ -37,10 +36,6 @@ let wsService: WebSocketService;
 async function startApp() {
     try {
         logger.info("🚀 Starting WhatsApp Gateway Service...");
-
-        // Connect to MongoDB
-        logger.info("📦 Connecting to MongoDB...");
-        // await mongoDBConnection.connect(CONFIG.MONGODB_URI);
 
         const port = Number(CONFIG.PORT) || 3000;
 

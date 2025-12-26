@@ -1,9 +1,11 @@
 /**
- * Service untuk manage chat history di MongoDB
+ * Service untuk manage chat history - MONGOOSE REMOVED
+ * All mongoose-related code has been commented out as mongoose is no longer used
  */
 
-import { Chat, type IMessage } from "../database/models/Chat";
+// import { Chat, type IMessage } from "../database/models/Chat";
 import { Logger } from "../core/logger/Logger";
+import type { ChatMessage } from "../ai/types";
 
 const logger = new Logger("ChatHistoryService");
 
@@ -14,7 +16,12 @@ export class ChatHistoryService {
     async getChatHistory(
         phone: string,
         limit: number = 20
-    ): Promise<IMessage[]> {
+    ): Promise<ChatMessage[]> {
+        logger.warn(
+            "ChatHistoryService.getChatHistory: Mongoose removed, returning empty array"
+        );
+        return [];
+        /*
         try {
             const chat = await Chat.findOne(
                 { phone },
@@ -32,6 +39,7 @@ export class ChatHistoryService {
             logger.error(`Failed to get chat history for ${phone}:`, error);
             return [];
         }
+        */
     }
 
     /**
@@ -44,6 +52,10 @@ export class ChatHistoryService {
         type: "text" | "image" | "voice" | "video" | "document" = "text",
         source: "ai" | "admin" = "ai"
     ): Promise<void> {
+        logger.warn(
+            "ChatHistoryService.addMessage: Mongoose removed, message not saved"
+        );
+        /*
         try {
             const message: IMessage = {
                 role,
@@ -69,12 +81,17 @@ export class ChatHistoryService {
         } catch (error) {
             logger.error(`Failed to save message for ${phone}:`, error);
         }
+        */
     }
 
     /**
      * Clear chat history untuk phone number
      */
     async clearHistory(phone: string): Promise<void> {
+        logger.warn(
+            "ChatHistoryService.clearHistory: Mongoose removed, history not cleared"
+        );
+        /*
         try {
             await Chat.findOneAndUpdate(
                 { phone },
@@ -84,24 +101,35 @@ export class ChatHistoryService {
         } catch (error) {
             logger.error(`Failed to clear history for ${phone}:`, error);
         }
+        */
     }
 
     /**
      * Delete chat completely
      */
     async deleteChat(phone: string): Promise<void> {
+        logger.warn(
+            "ChatHistoryService.deleteChat: Mongoose removed, chat not deleted"
+        );
+        /*
         try {
             await Chat.deleteOne({ phone });
             logger.info(`Chat deleted for ${phone}`);
         } catch (error) {
             logger.error(`Failed to delete chat for ${phone}:`, error);
         }
+        */
     }
 
     /**
      * Get all active chats (dengan activity dalam 7 hari terakhir)
      */
     async getActiveChats(): Promise<string[]> {
+        logger.warn(
+            "ChatHistoryService.getActiveChats: Mongoose removed, returning empty array"
+        );
+        return [];
+        /*
         try {
             const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
             const chats = await Chat.find(
@@ -114,6 +142,7 @@ export class ChatHistoryService {
             logger.error("Failed to get active chats:", error);
             return [];
         }
+        */
     }
 
     /**
@@ -121,14 +150,22 @@ export class ChatHistoryService {
      * Note: Caller should invalidate AI assistant's in-memory cache after this
      */
     async addAdminReply(phone: string, content: string): Promise<void> {
-        await this.addMessage(phone, "assistant", content, "text", "admin");
-        logger.info(`Admin reply saved for ${phone}`);
+        logger.warn(
+            "ChatHistoryService.addAdminReply: Mongoose removed, admin reply not saved"
+        );
+        // await this.addMessage(phone, "assistant", content, "text", "admin");
+        // logger.info(`Admin reply saved for ${phone}`);
     }
 
     /**
      * Get chat statistics
      */
     async getChatStats(phone: string) {
+        logger.warn(
+            "ChatHistoryService.getChatStats: Mongoose removed, returning null"
+        );
+        return null;
+        /*
         try {
             const chat = await Chat.findOne({ phone });
 
@@ -146,6 +183,7 @@ export class ChatHistoryService {
             logger.error(`Failed to get chat stats for ${phone}:`, error);
             return null;
         }
+        */
     }
 }
 

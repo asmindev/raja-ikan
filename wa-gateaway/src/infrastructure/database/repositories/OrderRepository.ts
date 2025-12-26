@@ -1,16 +1,18 @@
 /**
  * Order Repository Implementation (Infrastructure Layer)
+ * NOTE: All mongoose-related code has been commented out as mongoose is no longer used
  */
 
 import type { IOrderRepository } from "../../../domain/order/repositories/IOrderRepository";
 import { Order } from "../../../domain/order/entities/Order";
 import type { OrderStatus } from "../../../domain/order/types";
-import { OrderModel } from "../mongoose/models/OrderModel";
+// import { OrderModel } from "../mongoose/models/OrderModel"; // Removed mongoose
 import { Logger } from "../../../core/logger/Logger";
 
 const logger = new Logger("OrderRepository");
 
 export class OrderRepository implements IOrderRepository {
+    /*
     private docToOrder(doc: any): Order {
         return new Order({
             id: doc._id.toString(),
@@ -126,4 +128,5 @@ export class OrderRepository implements IOrderRepository {
             return [];
         }
     }
+    */
 }

@@ -274,144 +274,33 @@ function initializeFunctions(geminiClient2) {
   setGeminiClient(geminiClient2);
 }
 
-// src/database/models/Chat.ts
-import mongoose, { Schema } from "mongoose";
-var MessageSchema = new Schema({
-  role: {
-    type: String,
-    enum: ["user", "assistant"],
-    required: true
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  },
-  type: {
-    type: String,
-    enum: ["text", "image", "voice", "video", "document"],
-    default: "text"
-  },
-  source: {
-    type: String,
-    enum: ["ai", "admin"],
-    default: "ai"
-  }
-}, { _id: false });
-var ChatSchema = new Schema({
-  phone: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true
-  },
-  messages: {
-    type: [MessageSchema],
-    default: []
-  },
-  lastActivity: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
-ChatSchema.index({ lastActivity: 1 }, { expireAfterSeconds: 604800 });
-ChatSchema.pre("save", function() {
-  if (this.messages.length > 50) {
-    this.messages = this.messages.slice(-50);
-  }
-});
-var Chat = mongoose.model("Chat", ChatSchema);
-
 // src/services/ChatHistoryService.ts
 var logger2 = new Logger("ChatHistoryService");
 
 class ChatHistoryService {
   async getChatHistory(phone, limit = 20) {
-    try {
-      const chat = await Chat.findOne({ phone }, {
-        messages: { $slice: -limit }
-      });
-      if (!chat || chat.messages.length === 0) {
-        return [];
-      }
-      return chat.messages;
-    } catch (error) {
-      logger2.error(`Failed to get chat history for ${phone}:`, error);
-      return [];
-    }
+    logger2.warn("ChatHistoryService.getChatHistory: Mongoose removed, returning empty array");
+    return [];
   }
   async addMessage(phone, role, content, type = "text", source = "ai") {
-    try {
-      const message = {
-        role,
-        content,
-        timestamp: new Date,
-        type,
-        source
-      };
-      await Chat.findOneAndUpdate({ phone }, {
-        $push: { messages: message },
-        $set: { lastActivity: new Date }
-      }, {
-        upsert: true,
-        new: true
-      });
-      logger2.debug(`Message saved for ${phone}: ${role} (${source})`);
-    } catch (error) {
-      logger2.error(`Failed to save message for ${phone}:`, error);
-    }
+    logger2.warn("ChatHistoryService.addMessage: Mongoose removed, message not saved");
   }
   async clearHistory(phone) {
-    try {
-      await Chat.findOneAndUpdate({ phone }, { $set: { messages: [], lastActivity: new Date } });
-      logger2.info(`Chat history cleared for ${phone}`);
-    } catch (error) {
-      logger2.error(`Failed to clear history for ${phone}:`, error);
-    }
+    logger2.warn("ChatHistoryService.clearHistory: Mongoose removed, history not cleared");
   }
   async deleteChat(phone) {
-    try {
-      await Chat.deleteOne({ phone });
-      logger2.info(`Chat deleted for ${phone}`);
-    } catch (error) {
-      logger2.error(`Failed to delete chat for ${phone}:`, error);
-    }
+    logger2.warn("ChatHistoryService.deleteChat: Mongoose removed, chat not deleted");
   }
   async getActiveChats() {
-    try {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const chats = await Chat.find({ lastActivity: { $gte: sevenDaysAgo } }, { phone: 1 });
-      return chats.map((chat) => chat.phone);
-    } catch (error) {
-      logger2.error("Failed to get active chats:", error);
-      return [];
-    }
+    logger2.warn("ChatHistoryService.getActiveChats: Mongoose removed, returning empty array");
+    return [];
   }
   async addAdminReply(phone, content) {
-    await this.addMessage(phone, "assistant", content, "text", "admin");
-    logger2.info(`Admin reply saved for ${phone}`);
+    logger2.warn("ChatHistoryService.addAdminReply: Mongoose removed, admin reply not saved");
   }
   async getChatStats(phone) {
-    try {
-      const chat = await Chat.findOne({ phone });
-      if (!chat) {
-        return null;
-      }
-      return {
-        phone: chat.phone,
-        totalMessages: chat.messages.length,
-        lastActivity: chat.lastActivity,
-        createdAt: chat.createdAt
-      };
-    } catch (error) {
-      logger2.error(`Failed to get chat stats for ${phone}:`, error);
-      return null;
-    }
+    logger2.warn("ChatHistoryService.getChatStats: Mongoose removed, returning null");
+    return null;
   }
 }
 var chatHistoryService = new ChatHistoryService;
@@ -617,16 +506,6 @@ After extract_order_items returns data, then you can respond in Indonesian.`
   }
 }
 
-// src/domain/order/types.ts
-var OrderStatus;
-((OrderStatus2) => {
-  OrderStatus2["PENDING"] = "pending";
-  OrderStatus2["CONFIRMED"] = "confirmed";
-  OrderStatus2["PROCESSING"] = "processing";
-  OrderStatus2["COMPLETED"] = "completed";
-  OrderStatus2["CANCELLED"] = "cancelled";
-})(OrderStatus ||= {});
-
 // src/domain/order/entities/OrderItem.ts
 class OrderItem {
   name;
@@ -812,148 +691,10 @@ Apakah pesanan ini sudah benar?`;
   }
 }
 
-// src/infrastructure/database/mongoose/models/OrderModel.ts
-import mongoose2, { Schema as Schema2 } from "mongoose";
-var OrderItemSchema = new Schema2({
-  name: { type: String, required: true },
-  qty: { type: Number, required: true },
-  unit: { type: String, default: "kg" },
-  price: { type: Number }
-}, { _id: false });
-var OrderSchema = new Schema2({
-  customerPhone: {
-    type: String,
-    required: true,
-    index: true
-  },
-  items: {
-    type: [OrderItemSchema],
-    required: true
-  },
-  status: {
-    type: String,
-    enum: Object.values(OrderStatus),
-    default: "pending" /* PENDING */,
-    index: true
-  },
-  totalAmount: {
-    type: Number,
-    default: 0
-  },
-  notes: String,
-  confirmedAt: Date,
-  cancelledAt: Date
-}, {
-  timestamps: true
-});
-OrderSchema.index({ customerPhone: 1, status: 1 });
-var OrderModel = mongoose2.model("Order", OrderSchema);
-
 // src/infrastructure/database/repositories/OrderRepository.ts
 var logger4 = new Logger("OrderRepository");
 
 class OrderRepository {
-  docToOrder(doc) {
-    return new Order({
-      id: doc._id.toString(),
-      customerPhone: doc.customerPhone,
-      items: doc.items,
-      status: doc.status,
-      totalAmount: doc.totalAmount,
-      notes: doc.notes,
-      createdAt: doc.createdAt,
-      confirmedAt: doc.confirmedAt,
-      cancelledAt: doc.cancelledAt
-    });
-  }
-  async save(order) {
-    try {
-      const orderData = order.toJSON();
-      if (order.id) {
-        const updated = await OrderModel.findByIdAndUpdate(order.id, orderData, { new: true });
-        if (!updated) {
-          throw new Error(`Order not found: ${order.id}`);
-        }
-        return new Order({
-          ...orderData,
-          id: updated._id.toString()
-        });
-      } else {
-        const { id, ...dataWithoutId } = orderData;
-        const created = await OrderModel.create(dataWithoutId);
-        return new Order({
-          ...orderData,
-          id: created._id.toString()
-        });
-      }
-    } catch (error) {
-      logger4.error("Failed to save order:", error);
-      throw error;
-    }
-  }
-  async findById(id) {
-    try {
-      const doc = await OrderModel.findById(id);
-      if (!doc)
-        return null;
-      return this.docToOrder(doc);
-    } catch (error) {
-      logger4.error(`Failed to find order by id ${id}:`, error);
-      return null;
-    }
-  }
-  async findByCustomerPhone(phone) {
-    try {
-      const docs = await OrderModel.find({ customerPhone: phone }).sort({
-        createdAt: -1
-      });
-      return docs.map((doc) => this.docToOrder(doc));
-    } catch (error) {
-      logger4.error(`Failed to find orders for customer ${phone}:`, error);
-      return [];
-    }
-  }
-  async findPendingByCustomerPhone(phone) {
-    try {
-      const doc = await OrderModel.findOne({
-        customerPhone: phone,
-        status: "pending"
-      });
-      if (!doc)
-        return null;
-      return this.docToOrder(doc);
-    } catch (error) {
-      logger4.error(`Failed to find pending order for ${phone}:`, error);
-      return null;
-    }
-  }
-  async updateStatus(id, status) {
-    try {
-      await OrderModel.findByIdAndUpdate(id, { status });
-    } catch (error) {
-      logger4.error(`Failed to update order status ${id}:`, error);
-      throw error;
-    }
-  }
-  async delete(id) {
-    try {
-      await OrderModel.findByIdAndDelete(id);
-    } catch (error) {
-      logger4.error(`Failed to delete order ${id}:`, error);
-      throw error;
-    }
-  }
-  async findByStatus(status) {
-    try {
-      const docs = await OrderModel.find({ status }).sort({
-        createdAt: -1
-      });
-      return docs.map((doc) => this.docToOrder(doc));
-    } catch (error) {
-      logger4.error(`Failed to find orders by status ${status}:`, error);
-      return [];
-    }
-  }
 }
 
 // src/infrastructure/whatsapp/message-handlers/MessageHandler.ts
@@ -2202,7 +1943,6 @@ var wsService;
 async function startApp() {
   try {
     logger9.info("\uD83D\uDE80 Starting WhatsApp Gateway Service...");
-    logger9.info("\uD83D\uDCE6 Connecting to MongoDB...");
     const port = Number(CONFIG.PORT) || 3000;
     const httpServer = createServer(async (req, res) => {
       const request = new Request(`http://${req.headers.host || "localhost"}${req.url}`, {
