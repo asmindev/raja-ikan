@@ -18,15 +18,14 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             OrderSeeder::class,
         ]);
-
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => 'password',
-                'email_verified_at' => now(),
-                'phone' => '081234567890',
-            ]
-        );
+        // create a default admin user
+        User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@rajaikan.com',
+            'password' => bcrypt('password'), // change this to a secure password
+            'role' => 'admin',
+            'is_active' => true,
+            'phone' => '1234567890',
+        ]);
     }
 }
