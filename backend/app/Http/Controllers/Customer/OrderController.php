@@ -12,6 +12,7 @@ use App\Models\OrderLine;
 use App\Models\OrderStatusLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -55,6 +56,7 @@ class OrderController extends Controller
     public function show(Request $request, Order $order)
     {
         // Pastikan order milik user yang login
+        Log::info('OrderController@show - User ID: ' . $request->user()->id . ', Order Customer ID: ' . $order->customer_id);
         if ($order->customer_id !== $request->user()->id) {
             abort(403, 'Unauthorized');
         }
