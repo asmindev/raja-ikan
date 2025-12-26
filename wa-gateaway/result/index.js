@@ -1535,8 +1535,14 @@ class WhatsAppService {
     return this.currentQRCode;
   }
   async sendMessage(to, text) {
-    if (!this.socket || !this.isConnected) {
-      throw new Error("WhatsApp is not connected");
+    if (!this.socket) {
+      throw new Error("WhatsApp service is not initialized");
+    }
+    if (!this.isConnected) {
+      const connected = await this.waitForConnection();
+      if (!connected) {
+        throw new Error("WhatsApp is not connected (timeout waiting for connection)");
+      }
     }
     const jid = this.formatJID(to);
     await this.socket.sendMessage(jid, { text });
@@ -1667,6 +1673,18 @@ class WhatsAppService {
     this.currentQRCode = null;
     this.userInfo = undefined;
     this.socket = null;
+  }
+  async waitForConnection(timeoutMs = 5000) {
+    if (this.isConnected)
+      return true;
+    this.logger.info(`⏳ Waiting for connection (timeout: ${timeoutMs}ms)...`);
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (this.isConnected)
+        return true;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    return false;
   }
 }
 // src/services/WebSocketService.ts
