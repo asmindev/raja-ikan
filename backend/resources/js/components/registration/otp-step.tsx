@@ -1,17 +1,11 @@
 import { Button } from '@/components/ui/button';
 import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from '@/components/ui/field';
-import {
     InputOTP,
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp';
 import axios from 'axios';
-import { ArrowLeft, Check, Clock, Shield } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -33,7 +27,6 @@ export function OtpStep({
     const [isVerifying, setIsVerifying] = useState(false);
     const [canResend, setCanResend] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
-    const [otpSent, setOtpSent] = useState(false);
 
     // Send initial OTP on mount
     useEffect(() => {
@@ -62,7 +55,6 @@ export function OtpStep({
             const response = await axios.post('/auth/send-otp', { phone });
 
             toast.success(response.data.message);
-            setOtpSent(true);
             setTimeLeft(120); // Reset timer
             setCanResend(false);
         } catch (error: any) {
@@ -141,107 +133,72 @@ export function OtpStep({
     };
 
     return (
-        <div>
-            <FieldGroup>
-                <div className="mb-6 flex flex-col items-center gap-2 text-center">
-                    <div className="rounded-full bg-primary/10 p-3">
-                        <Shield className="h-12 w-12 text-primary" />
-                    </div>
-                    <h2 className="text-2xl font-bold">Verify Your Number</h2>
-                    <p className="text-sm text-muted-foreground">
-                        We've sent a 6-digit code to
-                    </p>
-                    <p className="text-sm font-semibold">{phone}</p>
-                </div>
+        <div className="space-y-6">
+            <div className="text-center">
+                <h2 className="text-lg font-semibold">Verify Phone</h2>
+                <p className="text-sm text-muted-foreground">
+                    Code sent to{' '}
+                    <span className="font-medium text-foreground">{phone}</span>
+                </p>
+            </div>
 
-                {otpSent && (
-                    <div className="rounded-lg bg-muted p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-sm">
-                            <Clock className="h-4 w-4" />
-                            <span>
-                                {timeLeft > 0 ? (
-                                    <>
-                                        Code expires in{' '}
-                                        <strong>{formatTime(timeLeft)}</strong>
-                                    </>
-                                ) : (
-                                    <span className="text-red-600">
-                                        Code expired
-                                    </span>
-                                )}
-                            </span>
-                        </div>
-                    </div>
-                )}
+            <div className="flex justify-center">
+                <InputOTP
+                    maxLength={6}
+                    value={otp}
+                    onChange={setOtp}
+                    disabled={isVerifying || isLoading}
+                >
+                    <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                </InputOTP>
+            </div>
 
-                <Field>
-                    <FieldLabel className="text-center">
-                        Enter OTP Code
-                    </FieldLabel>
-                    <div className="flex justify-center">
-                        <InputOTP
-                            maxLength={6}
-                            value={otp}
-                            onChange={setOtp}
-                            disabled={isVerifying || isLoading}
-                        >
-                            <InputOTPGroup>
-                                <InputOTPSlot index={0} />
-                                <InputOTPSlot index={1} />
-                                <InputOTPSlot index={2} />
-                                <InputOTPSlot index={3} />
-                                <InputOTPSlot index={4} />
-                                <InputOTPSlot index={5} />
-                            </InputOTPGroup>
-                        </InputOTP>
-                    </div>
-                    <FieldDescription className="text-center">
-                        Enter the 6-digit code from WhatsApp
-                    </FieldDescription>
-                </Field>
-
+            <div className="space-y-4">
                 <Button
                     type="button"
                     onClick={handleVerify}
                     disabled={otp.length !== 6 || isVerifying || isLoading}
                     className="w-full"
                 >
-                    {isVerifying || isLoading ? (
-                        'Verifying...'
-                    ) : (
-                        <>
-                            <Check className="mr-2 h-4 w-4" /> Verify & Complete
-                        </>
-                    )}
+                    {isVerifying ? 'Verifying...' : 'Verify Code'}
                 </Button>
 
-                <div className="text-center text-sm text-muted-foreground">
-                    Didn't receive the code?{' '}
-                    {canResend ? (
-                        <Button
-                            type="button"
-                            variant="link"
-                            className="h-auto p-0 text-primary"
-                            onClick={sendOtp}
-                            disabled={isSendingOtp}
-                        >
-                            {isSendingOtp ? 'Sending...' : 'Resend OTP'}
-                        </Button>
-                    ) : (
-                        <span>Wait {formatTime(timeLeft)}</span>
-                    )}
+                <div className="flex items-center justify-between text-sm">
+                    <button
+                        type="button"
+                        onClick={onBack}
+                        disabled={isVerifying || isLoading}
+                        className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                        <ArrowLeft className="mr-1 h-3 w-3" />
+                        Back
+                    </button>
+
+                    <div className="text-right">
+                        {canResend ? (
+                            <button
+                                type="button"
+                                onClick={sendOtp}
+                                disabled={isSendingOtp}
+                                className="font-medium text-primary transition-all hover:underline"
+                            >
+                                {isSendingOtp ? 'Sending...' : 'Resend Code'}
+                            </button>
+                        ) : (
+                            <span className="text-muted-foreground">
+                                Resend in {formatTime(timeLeft)}
+                            </span>
+                        )}
+                    </div>
                 </div>
-
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onBack}
-                    className="w-full"
-                    disabled={isVerifying || isLoading}
-                >
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                </Button>
-            </FieldGroup>
+            </div>
         </div>
     );
 }

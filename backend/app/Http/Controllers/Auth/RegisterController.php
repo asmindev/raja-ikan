@@ -36,8 +36,13 @@ class RegisterController extends Controller
 
         // Only validate unique phone for registration (not logged in users)
         if (!$isConfirmAccount) {
-            $rules['phone'] .= '|unique:users';
-            $messages['phone.unique'] = 'Nomor telepon ini sudah terdaftar. Silakan gunakan nomor lain atau login.';
+            // Check if phone exists and is ACTIVE
+            $activeUser = User::where('phone', $request->phone)->where('is_active', true)->first();
+            if ($activeUser) {
+                throw ValidationException::withMessages([
+                    'phone' => ['Nomor telepon ini sudah terdaftar. Silakan gunakan nomor lain atau login.'],
+                ]);
+            }
         }
 
         $request->validate($rules, $messages);
@@ -157,19 +162,39 @@ class RegisterController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'required|string|max:15|unique:users',
+            'email' => 'required|string|email|max:255',
+            'phone' => 'required|string|max:15',
             'password' => 'required|string|min:8|confirmed',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'address' => 'nullable|string|max:500',
         ], [
-            'email.unique' => 'Email ini sudah terdaftar. Silakan gunakan email lain atau login.',
-            'phone.unique' => 'Nomor telepon ini sudah terdaftar. Silakan gunakan nomor lain atau login.',
-            'phone.required' => 'Nomor telepon wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
+
+        // Check for existing active users
+        $activeUser = User::where('is_active', true)
+            ->where(function ($query) use ($request) {
+                $query->where('email', $request->email)
+                    ->orWhere('phone', $request->phone);
+            })
+            ->first();
+
+        if ($activeUser) {
+            if ($activeUser->email === $request->email) {
+                throw ValidationException::withMessages(['email' => 'Email ini sudah terdaftar. Silakan gunakan email lain atau login.']);
+            }
+            throw ValidationException::withMessages(['phone' => 'Nomor telepon ini sudah terdaftar. Silakan gunakan nomor lain atau login.']);
+        }
+
+        // Delete any inactive users with same email or phone to avoid duplicates
+        User::where('is_active', false)
+            ->where(function ($query) use ($request) {
+                $query->where('email', $request->email)
+                    ->orWhere('phone', $request->phone);
+            })
+            ->delete();
 
         $user = User::create([
             'name' => $request->name,
