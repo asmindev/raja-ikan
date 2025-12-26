@@ -40,7 +40,7 @@ async function startApp() {
 
         // Connect to MongoDB
         logger.info("📦 Connecting to MongoDB...");
-        await mongoDBConnection.connect(CONFIG.MONGODB_URI);
+        // await mongoDBConnection.connect(CONFIG.MONGODB_URI);
 
         const port = Number(CONFIG.PORT) || 3000;
 

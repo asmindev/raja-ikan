@@ -2189,67 +2189,8 @@ function setupRoutes(app, waService, wsService) {
   app.route("/", createAuthRoutes(waService, wsService));
 }
 
-// src/database/mongoose.ts
-import mongoose3 from "mongoose";
-var logger9 = new Logger("MongoDB");
-
-class MongoDBConnection {
-  static instance;
-  isConnected = false;
-  constructor() {}
-  static getInstance() {
-    if (!MongoDBConnection.instance) {
-      MongoDBConnection.instance = new MongoDBConnection;
-    }
-    return MongoDBConnection.instance;
-  }
-  async connect(uri) {
-    if (this.isConnected) {
-      logger9.info("MongoDB already connected");
-      return;
-    }
-    try {
-      await mongoose3.connect(uri);
-      this.isConnected = true;
-      logger9.info("✅ MongoDB connected successfully");
-      mongoose3.connection.on("error", (error) => {
-        logger9.error("MongoDB connection error:", error);
-        this.isConnected = false;
-      });
-      mongoose3.connection.on("disconnected", () => {
-        logger9.warn("MongoDB disconnected");
-        this.isConnected = false;
-      });
-      mongoose3.connection.on("reconnected", () => {
-        logger9.info("MongoDB reconnected");
-        this.isConnected = true;
-      });
-    } catch (error) {
-      logger9.error("Failed to connect to MongoDB:", error);
-      throw error;
-    }
-  }
-  async disconnect() {
-    if (!this.isConnected) {
-      return;
-    }
-    try {
-      await mongoose3.disconnect();
-      this.isConnected = false;
-      logger9.info("MongoDB disconnected");
-    } catch (error) {
-      logger9.error("Failed to disconnect from MongoDB:", error);
-      throw error;
-    }
-  }
-  getConnectionStatus() {
-    return this.isConnected && mongoose3.connection.readyState === 1;
-  }
-}
-var mongoDBConnection = MongoDBConnection.getInstance();
-
 // src/app.ts
-var logger10 = new Logger("Application");
+var logger9 = new Logger("Application");
 var app = new Hono6;
 app.use("*", cors({
   origin: "*",
@@ -2260,9 +2201,8 @@ var waService;
 var wsService;
 async function startApp() {
   try {
-    logger10.info("\uD83D\uDE80 Starting WhatsApp Gateway Service...");
-    logger10.info("\uD83D\uDCE6 Connecting to MongoDB...");
-    await mongoDBConnection.connect(CONFIG.MONGODB_URI);
+    logger9.info("\uD83D\uDE80 Starting WhatsApp Gateway Service...");
+    logger9.info("\uD83D\uDCE6 Connecting to MongoDB...");
     const port = Number(CONFIG.PORT) || 3000;
     const httpServer = createServer(async (req, res) => {
       const request = new Request(`http://${req.headers.host || "localhost"}${req.url}`, {
@@ -2288,18 +2228,18 @@ async function startApp() {
       res.end();
     });
     httpServer.listen(port);
-    logger10.info(`\uD83C\uDF10 HTTP Server running on http://0.0.0.0:${port}`);
+    logger9.info(`\uD83C\uDF10 HTTP Server running on http://0.0.0.0:${port}`);
     wsService = new WebSocketService(httpServer);
-    logger10.info(`\uD83D\uDD0C WebSocket Server running on port ${port}`);
+    logger9.info(`\uD83D\uDD0C WebSocket Server running on port ${port}`);
     waService = new WhatsAppService;
     setupRoutes(app, waService, wsService);
     waService.onQRCode((qrCode) => {
-      logger10.info("\uD83D\uDCF1 QR Code received from WhatsApp");
+      logger9.info("\uD83D\uDCF1 QR Code received from WhatsApp");
       wsService.emitQRCode(qrCode);
     });
     waService.onConnectionUpdate((status) => {
       if (status.connected && status.user) {
-        logger10.info(`✅ WhatsApp connected: ${status.user.name}`);
+        logger9.info(`✅ WhatsApp connected: ${status.user.name}`);
         wsService.emitConnectionStatus({
           status: "connected",
           user: status.user
@@ -2307,7 +2247,7 @@ async function startApp() {
         wsService.emitWhatsAppConnected(status.user);
         wsService.emitQRCode("");
       } else if (!status.connected) {
-        logger10.info("\uD83D\uDCF4 WhatsApp disconnected");
+        logger9.info("\uD83D\uDCF4 WhatsApp disconnected");
         wsService.emitConnectionStatus({
           status: "disconnected"
         });
@@ -2317,11 +2257,11 @@ async function startApp() {
       }
     });
     await waService.initialize();
-    logger10.info("✅ WhatsApp Gateway Service started successfully!");
-    logger10.info(`\uD83D\uDCF1 Scan QR code to connect WhatsApp`);
-    logger10.info(`\uD83C\uDF10 Frontend should connect to: http://0.0.0.0:${port}`);
+    logger9.info("✅ WhatsApp Gateway Service started successfully!");
+    logger9.info(`\uD83D\uDCF1 Scan QR code to connect WhatsApp`);
+    logger9.info(`\uD83C\uDF10 Frontend should connect to: http://0.0.0.0:${port}`);
   } catch (error) {
-    logger10.error("❌ Failed to start application:", error);
+    logger9.error("❌ Failed to start application:", error);
     process.exit(1);
   }
 }
