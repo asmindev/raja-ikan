@@ -15,7 +15,7 @@ logs/
 .env.*.local
 
 # Build outputs
-dist/
+# dist/
 build/
 
 # IDE
