@@ -4,7 +4,6 @@ import {
     LayoutDashboard,
     Package,
     Settings,
-    ShoppingCart,
     Truck,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -48,11 +47,11 @@ const items = [
         url: '/customer/orders',
         icon: Truck,
     },
-    {
-        title: 'Cart',
-        url: '/customer/cart',
-        icon: ShoppingCart,
-    },
+    // {
+    //     title: 'Cart',
+    //     url: '/customer/cart',
+    //     icon: ShoppingCart,
+    // },
 ];
 
 export function CustomerSidebar() {
