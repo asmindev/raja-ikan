@@ -57,7 +57,7 @@ class OrderController extends Controller
     {
         // Pastikan order milik user yang login
         Log::info('OrderController@show - User ID: ' . $request->user()->id . ', Order Customer ID: ' . $order->customer_id);
-        if ($order->customer_id !== $request->user()->id) {
+        if ((int)$order->customer_id !== (int)$request->user()->id) {
             abort(403, 'Unauthorized');
         }
 
@@ -141,7 +141,7 @@ class OrderController extends Controller
     public function cancel(CancelOrderRequest $request, Order $order)
     {
         // Pastikan order milik user yang login
-        if ($order->customer_id !== $request->user()->id) {
+        if ((int)$order->customer_id !== (int)$request->user()->id) {
             abort(403, 'Unauthorized');
         }
 
