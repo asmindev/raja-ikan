@@ -59,7 +59,8 @@ export function useWhatsAppSocket(): UseWhatsAppSocketReturn {
 
         // Initialize Socket.IO connection
         const socketInstance = io(WA_GATEWAY_URL, {
-            transports: ['websocket', 'polling'],
+            transports: ['websocket'],
+            secure: WA_GATEWAY_URL.startsWith('https'),
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
