@@ -16,31 +16,31 @@ export function Footer() {
                             href="#"
                             className="hover:text-zinc-900 dark:hover:text-zinc-50"
                         >
-                            About
+                            Tentang
                         </Link>
                         <Link
                             href="#"
                             className="hover:text-zinc-900 dark:hover:text-zinc-50"
                         >
-                            Products
+                            Produk
                         </Link>
                         <Link
                             href="#"
                             className="hover:text-zinc-900 dark:hover:text-zinc-50"
                         >
-                            Contact
+                            Kontak
                         </Link>
                         <Link
                             href="#"
                             className="hover:text-zinc-900 dark:hover:text-zinc-50"
                         >
-                            Privacy
+                            Privasi
                         </Link>
                     </div>
 
                     <p className="text-sm text-zinc-500 dark:text-zinc-500">
-                        &copy; {new Date().getFullYear()} Raja Ikan. All rights
-                        reserved.
+                        &copy; {new Date().getFullYear()} Raja Ikan. Seluruh hak
+                        cipta dilindungi.
                     </p>
                 </div>
             </div>

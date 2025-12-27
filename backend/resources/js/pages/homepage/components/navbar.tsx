@@ -61,7 +61,7 @@ export function Navbar() {
                                             : '/customer/dashboard'
                                     }
                                 >
-                                    Dashboard
+                                    Dasbor
                                 </Link>
                             </Button>
                         ) : (
@@ -70,14 +70,14 @@ export function Navbar() {
                                     href="/login"
                                     className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                                 >
-                                    Login
+                                    Masuk
                                 </Link>
                                 <Button
                                     size="sm"
                                     asChild
                                     className="rounded-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
                                 >
-                                    <Link href="/register">Get Started</Link>
+                                    <Link href="/register">Mulai</Link>
                                 </Button>
                             </>
                         )}
@@ -106,7 +106,7 @@ export function Navbar() {
                                             }
                                             className="w-full cursor-pointer"
                                         >
-                                            Dashboard
+                                            Dasbor
                                         </Link>
                                     </DropdownMenuItem>
                                 ) : (
@@ -116,7 +116,7 @@ export function Navbar() {
                                                 href="/login"
                                                 className="w-full cursor-pointer"
                                             >
-                                                Login
+                                                Masuk
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
@@ -124,7 +124,7 @@ export function Navbar() {
                                                 href="/register"
                                                 className="w-full cursor-pointer"
                                             >
-                                                Get Started
+                                                Mulai
                                             </Link>
                                         </DropdownMenuItem>
                                     </>

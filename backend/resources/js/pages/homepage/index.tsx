@@ -23,12 +23,16 @@ interface HomepageProps {
     products: Product[];
     categories: string[];
     featured: Product[];
+    filters?: {
+        search?: string;
+    };
 }
 
 export default function Homepage({
     products,
     categories,
     featured,
+    filters,
 }: HomepageProps) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(
         null,

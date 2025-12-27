@@ -35,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     />
                 ) : (
                     <div className="flex h-full w-full items-center justify-center text-zinc-400">
-                        No Image
+                        Tidak Ada Gambar
                     </div>
                 )}
 
@@ -46,7 +46,7 @@ export function ProductCard({ product }: ProductCardProps) {
                             variant="secondary"
                             className="bg-white/90 text-xs font-medium text-zinc-900 backdrop-blur-sm dark:bg-black/90 dark:text-white"
                         >
-                            Sold Out
+                            Habis
                         </Badge>
                     </div>
                 )}

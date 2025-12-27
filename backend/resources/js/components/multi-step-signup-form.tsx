@@ -18,9 +18,9 @@ import { LocationStep } from './registration/location-step';
 import { OtpStep } from './registration/otp-step';
 
 const steps = [
-    { id: 1, title: 'Personal Info', description: 'Basic details' },
-    { id: 2, title: 'Location', description: 'Choose address' },
-    { id: 3, title: 'Verify', description: 'OTP verification' },
+    { id: 1, title: 'Info Pribadi', description: 'Detail dasar' },
+    { id: 2, title: 'Lokasi', description: 'Pilih alamat' },
+    { id: 3, title: 'Verifikasi', description: 'Verifikasi OTP' },
 ];
 
 interface RegistrationData {
@@ -62,14 +62,14 @@ export function MultiStepSignupForm({
         // Validate step 1
         const newErrors: Partial<Record<keyof RegistrationData, string>> = {};
 
-        if (!data.name.trim()) newErrors.name = 'Name is required';
-        if (!data.email.trim()) newErrors.email = 'Email is required';
-        if (!data.phone.trim()) newErrors.phone = 'Phone number is required';
-        if (!data.password) newErrors.password = 'Password is required';
+        if (!data.name.trim()) newErrors.name = 'Nama wajib diisi';
+        if (!data.email.trim()) newErrors.email = 'Email wajib diisi';
+        if (!data.phone.trim()) newErrors.phone = 'Nomor telepon wajib diisi';
+        if (!data.password) newErrors.password = 'Password wajib diisi';
         if (data.password.length < 8)
-            newErrors.password = 'Password must be at least 8 characters';
+            newErrors.password = 'Password minimal 8 karakter';
         if (data.password !== data.password_confirmation) {
-            newErrors.password_confirmation = 'Passwords do not match';
+            newErrors.password_confirmation = 'Password tidak cocok';
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -105,7 +105,7 @@ export function MultiStepSignupForm({
             setData({ ...data, latitude, longitude, address });
 
             toast.success(
-                'Account created! Please verify your phone number to activate your account.',
+                'Akun berhasil dibuat! Silakan verifikasi nomor telepon Anda untuk mengaktifkan akun.',
             );
 
             // Proceed to OTP step
@@ -123,13 +123,13 @@ export function MultiStepSignupForm({
                 });
 
                 setErrors(formattedErrors);
-                toast.error('Please check your information and try again.');
+                toast.error('Silakan periksa informasi Anda dan coba lagi.');
 
                 // Go back to step 1 if there are validation errors
                 setCurrentStep(1);
             } else {
                 toast.error(
-                    error.response?.data?.message || 'Failed to create account',
+                    error.response?.data?.message || 'Gagal membuat akun',
                 );
             }
         } finally {
@@ -140,7 +140,7 @@ export function MultiStepSignupForm({
     const handleOtpVerified = () => {
         // OTP verification is handled by OtpStep component
         // If successful, user will be redirected by the backend
-        toast.success('Account verified successfully!');
+        toast.success('Akun berhasil diverifikasi!');
         window.location.href = '/customer/dashboard';
     };
 
@@ -163,16 +163,16 @@ export function MultiStepSignupForm({
                             <FieldGroup>
                                 <div className="mb-6 flex flex-col items-center gap-2 text-center">
                                     <h1 className="text-2xl font-bold">
-                                        Create your account
+                                        Buat akun Anda
                                     </h1>
                                     <p className="text-sm text-balance text-muted-foreground">
-                                        Enter your details to get started
+                                        Masukkan detail Anda untuk memulai
                                     </p>
                                 </div>
 
                                 <Field>
                                     <FieldLabel htmlFor="name">
-                                        Full Name
+                                        Nama Lengkap
                                     </FieldLabel>
                                     <div className="relative">
                                         <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -229,7 +229,7 @@ export function MultiStepSignupForm({
 
                                 <Field>
                                     <FieldLabel htmlFor="phone">
-                                        WhatsApp Number
+                                        Nomor WhatsApp
                                     </FieldLabel>
                                     <div className="relative">
                                         <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -254,7 +254,8 @@ export function MultiStepSignupForm({
                                         </p>
                                     )}
                                     <FieldDescription>
-                                        We'll send an OTP to verify your number
+                                        Kami akan mengirim OTP untuk
+                                        memverifikasi nomor Anda
                                     </FieldDescription>
                                 </Field>
 
@@ -283,7 +284,7 @@ export function MultiStepSignupForm({
                                     </Field>
                                     <Field>
                                         <FieldLabel htmlFor="password_confirmation">
-                                            Confirm Password
+                                            Konfirmasi Password
                                         </FieldLabel>
                                         <Input
                                             id="password_confirmation"
@@ -307,14 +308,14 @@ export function MultiStepSignupForm({
                                 </div>
 
                                 <Button type="submit" className="w-full">
-                                    Continue{' '}
+                                    Lanjutkan{' '}
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
 
                                 <FieldDescription className="text-center">
-                                    Already have an account?{' '}
+                                    Sudah punya akun?{' '}
                                     <Link href="/login" className="underline">
-                                        Sign in
+                                        Masuk
                                     </Link>
                                 </FieldDescription>
                             </FieldGroup>

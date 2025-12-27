@@ -11,6 +11,7 @@ use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,31 +23,7 @@ Route::prefix('auth')->group(function () {
     Route::get('/confirm-account', [RegisterController::class, 'showConfirmAccount'])->name('auth.confirm-account');
 });
 
-Route::get('/', function () {
-    $products = \App\Models\Product::where('is_active', true)
-        ->select('id', 'name', 'description', 'price', 'image', 'category', 'stock', 'is_featured')
-        ->latest()
-        ->limit(12)
-        ->get();
-
-    $categories = \App\Models\Product::where('is_active', true)
-        ->whereNotNull('category')
-        ->select('category')
-        ->distinct()
-        ->pluck('category')
-        ->filter();
-
-    $featured = \App\Models\Product::where('is_active', true)
-        ->where('is_featured', true)
-        ->limit(4)
-        ->get();
-
-    return Inertia::render('homepage/index', [
-        'products' => $products,
-        'categories' => $categories,
-        'featured' => $featured,
-    ]);
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/optimize', function () {
     return Inertia::render('optimize/index');

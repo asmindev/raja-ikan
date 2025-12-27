@@ -4,18 +4,18 @@ export function FeatureSection() {
     const features = [
         {
             icon: Truck,
-            title: 'Fast Delivery',
-            description: 'Fresh to your door',
+            title: 'Pengiriman Cepat',
+            description: 'Segar sampai ke pintu Anda',
         },
         {
             icon: ShieldCheck,
-            title: 'Quality Guaranteed',
-            description: 'Sourced daily',
+            title: 'Kualitas Terjamin',
+            description: 'Dipanen harian',
         },
         {
             icon: Clock,
-            title: 'Fresh Daily',
-            description: 'Morning catch',
+            title: 'Segar Setiap Hari',
+            description: 'Hasil tangkapan pagi',
         },
     ];
 

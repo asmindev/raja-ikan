@@ -5,12 +5,12 @@ import {
     FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ArrowLeft, ArrowRight, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+import { Textarea } from '../ui/textarea';
 
 // Fix for default marker icons in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -108,7 +108,7 @@ export function LocationStep({ onComplete, onBack }: LocationStepProps) {
         e.preventDefault();
 
         if (!address.trim()) {
-            alert('Please enter your address');
+            alert('Silakan masukkan alamat Anda');
             return;
         }
 
@@ -120,9 +120,9 @@ export function LocationStep({ onComplete, onBack }: LocationStepProps) {
             <FieldGroup>
                 <div className="mb-6 flex flex-col items-center gap-2 text-center">
                     <MapPin className="h-12 w-12 text-primary" />
-                    <h2 className="text-2xl font-bold">Choose Your Location</h2>
+                    <h2 className="text-2xl font-bold">Pilih Lokasi Anda</h2>
                     <p className="text-sm text-muted-foreground">
-                        Click on the map to set your delivery location
+                        Klik pada peta untuk menentukan lokasi pengiriman Anda
                     </p>
                 </div>
 
@@ -152,14 +152,13 @@ export function LocationStep({ onComplete, onBack }: LocationStepProps) {
                 </div>
 
                 <Field>
-                    <FieldLabel htmlFor="address">Delivery Address</FieldLabel>
-                    <Input
+                    <FieldLabel htmlFor="address">Alamat Pengiriman</FieldLabel>
+                    <Textarea
                         id="address"
-                        type="text"
                         placeholder={
                             isFetchingAddress
                                 ? 'Sedang mengambil alamat...'
-                                : 'Enter your full address (street, building, etc.)'
+                                : 'Masukkan alamat lengkap Anda (jalan, gedung, dll.)'
                         }
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
@@ -167,7 +166,8 @@ export function LocationStep({ onComplete, onBack }: LocationStepProps) {
                         disabled={isFetchingAddress}
                     />
                     <FieldDescription>
-                        This will help our driver find you easily
+                        Ini akan membantu driver kami menemukan Anda dengan
+                        mudah
                     </FieldDescription>
                 </Field>
 
@@ -180,8 +180,8 @@ export function LocationStep({ onComplete, onBack }: LocationStepProps) {
                 >
                     <MapPin className="mr-2 h-4 w-4" />
                     {isLoadingLocation
-                        ? 'Detecting...'
-                        : 'Use My Current Location'}
+                        ? 'Mendeteksi...'
+                        : 'Gunakan Lokasi Saya Saat Ini'}
                 </Button>
 
                 <div className="flex gap-2">
@@ -191,10 +191,10 @@ export function LocationStep({ onComplete, onBack }: LocationStepProps) {
                         onClick={onBack}
                         className="flex-1"
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
                     </Button>
                     <Button type="submit" className="flex-1">
-                        Continue <ArrowRight className="ml-2 h-4 w-4" />
+                        Lanjutkan <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
             </FieldGroup>

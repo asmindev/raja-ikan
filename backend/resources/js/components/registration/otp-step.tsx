@@ -71,7 +71,7 @@ export function OtpStep({
                 toast.error(message);
             } else {
                 toast.error(
-                    error.response?.data?.message || 'Failed to send OTP',
+                    error.response?.data?.message || 'Gagal mengirim OTP',
                 );
             }
         } finally {
@@ -81,7 +81,7 @@ export function OtpStep({
 
     const handleVerify = async () => {
         if (otp.length !== 6) {
-            toast.error('Please enter the complete 6-digit OTP');
+            toast.error('Silakan masukkan OTP 6 digit lengkap');
             return;
         }
 
@@ -108,13 +108,12 @@ export function OtpStep({
                 onVerified();
             }
         } catch (error: any) {
-            const message =
-                error.response?.data?.message || 'Verification failed';
+            const message = error.response?.data?.message || 'Verifikasi gagal';
             const attemptsRemaining = error.response?.data?.attempts_remaining;
 
             if (attemptsRemaining !== undefined) {
                 toast.error(
-                    `${message} (${attemptsRemaining} attempts remaining)`,
+                    `${message} (${attemptsRemaining} percobaan tersisa)`,
                 );
             } else {
                 toast.error(message);
@@ -135,9 +134,9 @@ export function OtpStep({
     return (
         <div className="space-y-6">
             <div className="text-center">
-                <h2 className="text-lg font-semibold">Verify Phone</h2>
+                <h2 className="text-lg font-semibold">Verifikasi Telepon</h2>
                 <p className="text-sm text-muted-foreground">
-                    Code sent to{' '}
+                    Kode dikirim ke{' '}
                     <span className="font-medium text-foreground">{phone}</span>
                 </p>
             </div>
@@ -167,7 +166,7 @@ export function OtpStep({
                     disabled={otp.length !== 6 || isVerifying || isLoading}
                     className="w-full"
                 >
-                    {isVerifying ? 'Verifying...' : 'Verify Code'}
+                    {isVerifying ? 'Memverifikasi...' : 'Verifikasi Kode'}
                 </Button>
 
                 <div className="flex items-center justify-between text-sm">
@@ -178,7 +177,7 @@ export function OtpStep({
                         className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
                     >
                         <ArrowLeft className="mr-1 h-3 w-3" />
-                        Back
+                        Kembali
                     </button>
 
                     <div className="text-right">
@@ -189,11 +188,13 @@ export function OtpStep({
                                 disabled={isSendingOtp}
                                 className="font-medium text-primary transition-all hover:underline"
                             >
-                                {isSendingOtp ? 'Sending...' : 'Resend Code'}
+                                {isSendingOtp
+                                    ? 'Mengirim...'
+                                    : 'Kirim Ulang Kode'}
                             </button>
                         ) : (
                             <span className="text-muted-foreground">
-                                Resend in {formatTime(timeLeft)}
+                                Kirim ulang dalam {formatTime(timeLeft)}
                             </span>
                         )}
                     </div>

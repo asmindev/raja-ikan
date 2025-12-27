@@ -35,10 +35,10 @@ export function LoginForm({
                         <FieldGroup>
                             <div className="flex flex-col items-center gap-2 text-center">
                                 <h1 className="text-2xl font-bold">
-                                    Welcome back
+                                    Selamat datang kembali
                                 </h1>
                                 <p className="text-balance text-muted-foreground">
-                                    Login to your delivery account
+                                    Masuk ke akun pengiriman Anda
                                 </p>
                             </div>
                             <Field>
@@ -46,7 +46,7 @@ export function LoginForm({
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder="anda@contoh.com"
                                     value={data.email}
                                     onChange={(e) =>
                                         setData('email', e.target.value)
@@ -70,7 +70,7 @@ export function LoginForm({
                                         href={route('password.request')}
                                         className="ml-auto text-sm underline-offset-2 hover:underline"
                                     >
-                                        Forgot your password?
+                                        Lupa password Anda?
                                     </Link>
                                 </div>
                                 <Input
@@ -106,7 +106,7 @@ export function LoginForm({
                                         htmlFor="remember"
                                         className="cursor-pointer text-sm font-normal"
                                     >
-                                        Remember me
+                                        Ingat saya
                                     </FieldLabel>
                                 </div>
                             </Field>
@@ -116,7 +116,7 @@ export function LoginForm({
                                     className="w-full"
                                     disabled={processing}
                                 >
-                                    {processing ? 'Logging in...' : 'Login'}
+                                    {processing ? 'Sedang masuk...' : 'Masuk'}
                                 </Button>
                             </Field>
                             <FieldDescription className="text-center">
@@ -125,7 +125,7 @@ export function LoginForm({
                                     href={route('register')}
                                     className="underline"
                                 >
-                                    Sign up
+                                    Daftar
                                 </Link>
                             </FieldDescription>
                         </FieldGroup>
@@ -140,15 +140,15 @@ export function LoginForm({
                 </CardContent>
             </Card>
             <FieldDescription className="px-6 text-center">
-                By clicking continue, you agree to our{' '}
+                Dengan mengklik lanjutkan, Anda menyetujui{' '}
                 <a href="#" className="underline">
-                    Terms of Service
+                    Ketentuan Layanan
                 </a>{' '}
-                and{' '}
+                dan{' '}
                 <a href="#" className="underline">
-                    Privacy Policy
-                </a>
-                .
+                    Kebijakan Privasi
+                </a>{' '}
+                kami.
             </FieldDescription>
         </div>
     );

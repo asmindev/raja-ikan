@@ -29,7 +29,7 @@ export function CategoryFilter({
                             : 'text-zinc-500 dark:text-zinc-400',
                     )}
                 >
-                    All Products
+                    Semua Produk
                 </button>
                 {categories.map((category) => (
                     <button

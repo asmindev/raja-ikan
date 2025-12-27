@@ -15,12 +15,19 @@ declare module 'ziggy-js' {
     "password.update": [],
     "register": [],
     "register.store": [],
+    "user-profile-information.update": [],
     "password.confirm": [],
     "password.confirmation": [],
     "password.confirm.store": [],
     "sanctum.csrf-cookie": [],
+    "auth.register": [],
+    "auth.send-otp": [],
+    "auth.verify-otp": [],
+    "auth.confirm-account": [],
     "home": [],
     "optimize": [],
+    "profile.edit": [],
+    "profile.update": [],
     "admin.dashboard.index": [],
     "admin.users.index": [],
     "admin.users.show": [
@@ -138,6 +145,7 @@ declare module 'ziggy-js' {
         }
     ],
     "customer.cart.index": [],
+    "customer.cart.sync": [],
     "customer.cart.add": [],
     "customer.cart.update": [
         {
@@ -170,6 +178,37 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "driver.dashboard.index": [],
+    "driver.orders.index": [],
+    "driver.orders.show": [
+        {
+            "name": "order",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "driver.orders.accept": [
+        {
+            "name": "order",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "driver.orders.start": [
+        {
+            "name": "order",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "driver.orders.complete": [
+        {
+            "name": "order",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "driver.routes.active": [],
     "api.v1.orders.index": [],
     "api.v1.orders.show": [
         {
