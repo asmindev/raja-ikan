@@ -13,7 +13,7 @@ import { Fish, ShoppingBag, User } from 'lucide-react';
 export function Navbar() {
     const { props } = usePage();
     const user = props.auth?.user;
-    const { openCart, items } = useCart();
+    const { openCart, items, isBouncing } = useCart();
 
     return (
         <nav className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
@@ -37,7 +37,11 @@ export function Navbar() {
                     >
                         <ShoppingBag className="h-5 w-5" />
                         {items.length > 0 && (
-                            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">
+                            <span
+                                className={`absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white transition-transform duration-300 ${
+                                    isBouncing ? 'scale-125 animate-bounce' : ''
+                                }`}
+                            >
                                 {items.length}
                             </span>
                         )}

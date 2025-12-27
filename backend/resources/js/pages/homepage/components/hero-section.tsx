@@ -61,29 +61,29 @@ export function HeroSection() {
 
                     <div className="mt-10 flex items-center justify-center gap-x-6">
                         <div className="relative mx-auto w-10/12 max-w-md">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Search
+                                    className="h-5 w-5 text-zinc-400"
+                                    aria-hidden="true"
+                                />
+                            </div>
                             <Input
                                 type="text"
-                                className="block w-full rounded-full border-0 bg-zinc-100 py-4 pr-12 pl-6 text-zinc-900 ring-1 ring-zinc-300 ring-inset placeholder:text-zinc-400 focus:ring-2 focus:ring-zinc-600 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700 dark:focus:ring-zinc-500"
+                                className="block w-full rounded-full border-0 bg-zinc-100 py-4 pr-12 pl-10 text-zinc-900 ring-1 ring-zinc-300 ring-inset placeholder:text-zinc-400 focus:ring-2 focus:ring-zinc-600 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700 dark:focus:ring-zinc-500"
                                 placeholder="Cari salmon, tuna, udang..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={handleKeyDown}
                             />
-                            <button
-                                type="button"
-                                onClick={
-                                    hasActiveSearch
-                                        ? handleClearSearch
-                                        : handleSearch
-                                }
-                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                            >
-                                {hasActiveSearch ? (
-                                    <X className="h-5 w-5" />
-                                ) : (
-                                    <Search className="h-5 w-5" />
-                                )}
-                            </button>
+                            {hasActiveSearch && (
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    onClick={handleClearSearch}
+                                >
+                                    <X className="h-5 w-5 text-zinc-400" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

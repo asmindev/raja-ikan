@@ -37,6 +37,7 @@ interface CartContextType {
     clearCart: () => void;
     isLoading: boolean;
     total: number;
+    isBouncing: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -46,6 +47,7 @@ export function CartProvider({ children }: PropsWithChildren) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [isBouncing, setIsBouncing] = useState(false);
 
     const total = items.reduce(
         (acc, item) => acc + item.product.price * item.quantity,
@@ -98,6 +100,10 @@ export function CartProvider({ children }: PropsWithChildren) {
             }
             return [...prev, { product_id: product.id, product, quantity }];
         });
+
+        // Trigger bounce animation
+        setIsBouncing(true);
+        setTimeout(() => setIsBouncing(false), 600);
     };
 
     const removeFromCart = (productId: number) => {
@@ -164,6 +170,7 @@ export function CartProvider({ children }: PropsWithChildren) {
                 clearCart,
                 isLoading,
                 total,
+                isBouncing,
             }}
         >
             {children}
