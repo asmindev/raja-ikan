@@ -44,19 +44,19 @@ export function ProductCard({ product }: ProductCardProps) {
                     <div className="absolute top-3 right-3">
                         <Badge
                             variant="secondary"
-                            className="bg-white/90 text-xs font-medium text-zinc-900 backdrop-blur-sm dark:bg-black/90 dark:text-white"
+                            className="bg-white/70 text-xs font-medium text-zinc-900 shadow-lg backdrop-blur-md dark:bg-black/70 dark:text-white"
                         >
                             Habis
                         </Badge>
                     </div>
                 )}
 
-                {/* Quick Add Button (Visible on Hover) */}
+                {/* Quick Add Button (Always visible on mobile, hover on desktop) */}
                 {!isOutOfStock && (
-                    <div className="absolute right-3 bottom-3 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <div className="absolute right-3 bottom-3 translate-y-0 opacity-100 transition-all duration-300 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                         <Button
                             size="icon"
-                            className="h-10 w-10 rounded-full bg-white text-zinc-900 shadow-lg hover:bg-zinc-100 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+                            className="h-10 w-10 rounded-full border border-white/30 bg-white/20 text-zinc-900 shadow-xl backdrop-blur-lg transition-all duration-200 hover:bg-white/30 dark:border-white/10 dark:bg-black/20 dark:text-white dark:hover:bg-black/30"
                             onClick={() => addToCart(product)}
                         >
                             <ShoppingBag className="h-4 w-4" />
