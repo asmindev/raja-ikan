@@ -147,7 +147,7 @@ class RouteController extends Controller
             Log::info('Calling optimization service');
             Log::info('Coordinates sent to optimization service', ['coordinates' => $coordinates]);
             $optimizationResponse = Http::timeout(30)
-                ->post('http://localhost:5000/api/v1/optimize', [
+                ->post(config('services.optimization.url') . '/api/v1/optimize', [
                     'coordinates' => $coordinates,
                 ])
                 ->json();
@@ -438,7 +438,7 @@ class RouteController extends Controller
 
             // Call optimization service
             $optimizationResponse = Http::timeout(30)
-                ->post('http://localhost:5000/api/v1/optimize', [
+                ->post(config('services.optimization.url') . '/api/v1/optimize', [
                     'coordinates' => $coordinates,
                 ])
                 ->json();

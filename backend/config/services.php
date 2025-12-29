@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'optimization' => [
+        'url' => env('OPTIMIZATION_SERVICE_URL', 'http://localhost:5000'),
+    ],
+
 ];
