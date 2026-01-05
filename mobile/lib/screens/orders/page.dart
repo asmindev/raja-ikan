@@ -126,11 +126,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
             .read(deliveringOrdersProvider.notifier)
             .fetchOrders(refresh: true, search: _searchQuery);
         break;
-      case 2:
-        ref
-            .read(completedOrdersProvider.notifier)
-            .fetchOrders(refresh: true, search: _searchQuery);
-        break;
     }
   }
 
@@ -148,7 +143,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return Scaffold(
       headers: [
         Container(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -172,9 +167,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Orders',
+                          'Pesanan',
                           style: TextStyle(
-                            fontSize: 32,
+                            fontSize: 28,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.5,
                             color: Colors.white,
@@ -182,9 +177,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                         ),
                         const Gap(4),
                         Text(
-                          'Manage your deliveries',
+                          'Kelola pengiriman Anda',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
@@ -197,10 +192,10 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: Colors.white.withValues(alpha: 0.25),
                           width: 1,
                         ),
                       ),
@@ -215,7 +210,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                             ),
                           ),
                           Text(
-                            'Active',
+                            'Aktif',
                             style: TextStyle(
                               fontSize: 11,
                               color: Colors.white.withValues(alpha: 0.9),
@@ -226,7 +221,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                     ),
                   ],
                 ),
-                const Gap(16),
+                const Gap(14),
                 // Search Bar & Selection Mode Button
                 Row(
                   children: [
@@ -308,52 +303,36 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
           ),
         ),
         const Divider(height: 0),
-        // Custom Tabs
+        // Modern Tabs
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           color: theme.colorScheme.background,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildTabButton(
-                  label: 'Available',
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildModernTab(
+                  label: 'Tersedia',
                   count: ref.watch(availableOrdersProvider).orders.length,
                   isSelected: _selectedTab == 0,
                   onTap: () {
-                    setState(() {
-                      _selectedTab = 0;
-                    });
+                    setState(() => _selectedTab = 0);
                     _loadOrders();
                   },
                 ),
-                const Gap(8),
-                _buildTabButton(
-                  label: 'In Progress',
+              ),
+              const Gap(8),
+              Expanded(
+                child: _buildModernTab(
+                  label: 'Sedang Berlangsung',
                   count: ref.watch(deliveringOrdersProvider).orders.length,
                   isSelected: _selectedTab == 1,
                   onTap: () {
-                    setState(() {
-                      _selectedTab = 1;
-                    });
-                    // Fetch active route when switching to In Progress tab
+                    setState(() => _selectedTab = 1);
                     ref.read(activeRouteProvider.notifier).fetchActiveRoute();
                   },
                 ),
-                const Gap(8),
-                _buildTabButton(
-                  label: 'Completed',
-                  count: ref.watch(completedOrdersProvider).orders.length,
-                  isSelected: _selectedTab == 2,
-                  onTap: () {
-                    setState(() {
-                      _selectedTab = 2;
-                    });
-                    _loadOrders();
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         const Divider(height: 0),
@@ -363,7 +342,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         children: [
           _buildAvailableOrders(),
           _buildDeliveringOrders(),
-          _buildCompletedOrders(),
         ],
       ),
     );
@@ -375,7 +353,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return available + delivering;
   }
 
-  Widget _buildTabButton({
+  Widget _buildModernTab({
     required String label,
     required int count,
     required bool isSelected,
@@ -384,36 +362,36 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF059669) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF059669)
-                : Theme.of(context).colorScheme.border,
-            width: 1.5,
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected
+                  ? const Color(0xFF059669)
+                  : Colors.transparent,
+              width: 2,
+            ),
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.foreground,
+                    ? const Color(0xFF059669)
+                    : Theme.of(context).colorScheme.mutedForeground,
               ),
             ),
-            const Gap(8),
+            const Gap(6),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withValues(alpha: 0.2)
+                    ? const Color(0xFF059669)
                     : Theme.of(context).colorScheme.muted,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -448,8 +426,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     if (orderState.orders.isEmpty) {
       return const EmptyState(
         icon: LucideIcons.inbox,
-        title: 'No available orders',
-        message: 'New orders will appear here',
+        title: 'Tidak ada pesanan tersedia',
+        message: 'Pesanan baru akan muncul di sini',
       );
     }
 
@@ -514,7 +492,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                       ),
                       const Gap(12),
                       Text(
-                        'View Map (${_selectedOrderIds.length} Orders)',
+                        'Lihat Peta (${_selectedOrderIds.length} Pesanan)',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -551,7 +529,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                     const Icon(LucideIcons.x, size: 14, color: Colors.red),
                     const Gap(4),
                     Text(
-                      'Clear (${_selectedOrderIds.length})',
+                      'Bersihkan (${_selectedOrderIds.length})',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -586,8 +564,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     if (activeRouteState.route == null || activeRouteState.orders.isEmpty) {
       return const EmptyState(
         icon: LucideIcons.route,
-        title: 'No active route',
-        message: 'Optimize orders from Available tab to start delivery',
+        title: 'Tidak ada rute aktif',
+        message: 'Optimalkan pesanan dari tab Tersedia untuk memulai pengiriman',
       );
     }
 
@@ -596,45 +574,6 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       route: activeRouteState.route!,
       orders: activeRouteState.orders,
       onRefresh: () => ref.read(activeRouteProvider.notifier).fetchActiveRoute(),
-    );
-  }
-
-  Widget _buildCompletedOrders() {
-    final orderState = ref.watch(completedOrdersProvider);
-
-    if (orderState.isLoading && orderState.orders.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (orderState.error != null && orderState.orders.isEmpty) {
-      return ErrorState(error: orderState.error!, onRetry: _loadOrders);
-    }
-
-    if (orderState.orders.isEmpty) {
-      return const EmptyState(
-        icon: LucideIcons.circleCheck,
-        title: 'No completed orders',
-        message: 'Completed orders will appear here',
-      );
-    }
-
-    return material.RefreshIndicator(
-      onRefresh: () async => _loadOrders(),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: orderState.orders.length,
-        separatorBuilder: (_, __) => const Gap(12),
-        itemBuilder: (context, index) {
-          final order = orderState.orders[index];
-          return OrderCard(
-            order: order,
-            status: 'Delivered',
-            completedAt: order.deliveryAt != null
-                ? DateFormat('HH:mm a').format(order.deliveryAt!)
-                : null,
-          );
-        },
-      ),
     );
   }
 }
@@ -747,7 +686,7 @@ class _ActiveRouteTimeline extends StatelessWidget {
                       ),
                       const Gap(12),
                       const Text(
-                        'View Maps',
+                        'Buka Peta',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

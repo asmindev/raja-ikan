@@ -14,8 +14,8 @@ class OrderTimeline extends StatelessWidget {
     // Order Created
     if (order.createdAt != null) {
       timeline.add({
-        'title': 'Order Created',
-        'description': 'Order has been placed',
+        'title': 'Pesanan Dibuat',
+        'description': 'Pesanan telah dibuat',
         'time': order.createdAt,
         'icon': LucideIcons.shoppingBag,
       });
@@ -24,8 +24,8 @@ class OrderTimeline extends StatelessWidget {
     // Order Accepted
     if (order.acceptedAt != null) {
       timeline.add({
-        'title': 'Order Accepted',
-        'description': 'Driver accepted the order',
+        'title': 'Pesanan Diterima',
+        'description': 'Driver menerima pesanan',
         'time': order.acceptedAt,
         'icon': LucideIcons.circleCheck,
       });
@@ -34,8 +34,8 @@ class OrderTimeline extends StatelessWidget {
     // Pickup Started
     if (order.pickupAt != null) {
       timeline.add({
-        'title': 'Pickup Started',
-        'description': 'Driver is on the way to pickup',
+        'title': 'Pengambilan Dimulai',
+        'description': 'Driver menuju lokasi pengambilan',
         'time': order.pickupAt,
         'icon': LucideIcons.package,
       });
@@ -44,8 +44,8 @@ class OrderTimeline extends StatelessWidget {
     // Delivery Started
     if (order.deliveringAt != null) {
       timeline.add({
-        'title': 'On Delivery',
-        'description': 'Order is being delivered',
+        'title': 'Sedang Dikirim',
+        'description': 'Pesanan sedang dikirim',
         'time': order.deliveringAt,
         'icon': LucideIcons.truck,
       });
@@ -54,8 +54,8 @@ class OrderTimeline extends StatelessWidget {
     // Order Completed
     if (order.deliveryAt != null) {
       timeline.add({
-        'title': 'Delivered',
-        'description': 'Order has been delivered successfully',
+        'title': 'Terkirim',
+        'description': 'Pesanan telah sampai',
         'time': order.deliveryAt,
         'icon': LucideIcons.circleCheck,
       });
@@ -64,8 +64,8 @@ class OrderTimeline extends StatelessWidget {
     // Order Cancelled
     if (order.cancelledAt != null) {
       timeline.add({
-        'title': 'Cancelled',
-        'description': 'Order has been cancelled',
+        'title': 'Dibatalkan',
+        'description': 'Pesanan telah dibatalkan',
         'time': order.cancelledAt,
         'icon': LucideIcons.circleX,
       });
@@ -77,7 +77,7 @@ class OrderTimeline extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Status Timeline',
+            'Timeline Status',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const Gap(16),

@@ -26,11 +26,11 @@ class OrderItemsList extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Order Items',
+                'Item Pesanan',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               Text(
-                '${order.items.length} items',
+                '${order.items.length} item',
                 style: TextStyle(
                   fontSize: 13,
                   color: Theme.of(context).colorScheme.mutedForeground,

@@ -29,19 +29,19 @@ class OrderCard extends StatelessWidget {
     return GestureDetector(
       onTap: onViewDetails,
       child: Card(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            // Truck Icon (sama untuk semua)
+            // Truck Icon
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
                 color: const Color(0xFF059669).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 LucideIcons.truck,
-                size: 20,
+                size: 18,
                 color: Color(0xFF059669),
               ),
             ),
@@ -52,13 +52,36 @@ class OrderCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Order Number
-                  Text(
-                    orderNumber,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  // Order Number with status badge
+                  Row(
+                    children: [
+                      Text(
+                        orderNumber,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Gap(8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          status,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const Gap(6),
 
@@ -68,19 +91,8 @@ class OrderCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13,
-                      color: theme.colorScheme.mutedForeground,
-                    ),
-                  ),
-                  const Gap(4),
-
-                  // Distance
-                  Text(
-                    distance,
-                    style: TextStyle(
                       fontSize: 12,
                       color: theme.colorScheme.mutedForeground,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -91,7 +103,7 @@ class OrderCard extends StatelessWidget {
             const Gap(8),
             Icon(
               LucideIcons.chevronRight,
-              size: 18,
+              size: 16,
               color: theme.colorScheme.mutedForeground,
             ),
           ],

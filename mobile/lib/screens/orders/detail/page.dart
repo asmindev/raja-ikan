@@ -28,6 +28,7 @@ class OrderDetailScreen extends ConsumerWidget {
         OrderDetailHeader(
           order: displayOrder,
           isLoading: orderDetailState.isLoading,
+          status: displayOrder.status,
         ),
         const Divider(height: 0),
       ],
@@ -45,7 +46,7 @@ class OrderDetailScreen extends ConsumerWidget {
                     ),
                     const Gap(16),
                     Text(
-                      'Error loading order details',
+                      'Gagal memuat detail pesanan',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -66,41 +67,61 @@ class OrderDetailScreen extends ConsumerWidget {
                             .read(orderDetailProvider(order.id).notifier)
                             .refresh();
                       },
-                      child: const Text('Retry'),
+                      child: const Text('Coba Lagi'),
                     ),
                   ],
                 ),
               ),
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Status Badge
-                  OrderStatusBadge(status: displayOrder.status),
-                  const Gap(20),
+          : Stack(
+              children: [
+                // Main scrollable content
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Customer Info
+                      OrderCustomerInfo(order: displayOrder),
+                      const Gap(12),
 
-                  // Customer Info
-                  OrderCustomerInfo(order: displayOrder),
-                  const Gap(16),
+                      // Delivery Address & Time
+                      OrderDeliveryInfo(order: displayOrder),
+                      const Gap(12),
 
-                  // Delivery Address & Time
-                  OrderDeliveryInfo(order: displayOrder),
-                  const Gap(16),
+                      // Order Items
+                      OrderItemsList(order: displayOrder),
+                      const Gap(12),
 
-                  // Order Items
-                  OrderItemsList(order: displayOrder),
-                  const Gap(16),
-
-                  // Status Timeline
-                  OrderTimeline(order: displayOrder),
-                  const Gap(20),
-
-                  // Action Buttons
-                  OrderActionButtons(order: displayOrder),
-                ],
-              ),
+                      // Status Timeline
+                      OrderTimeline(order: displayOrder),
+                    ],
+                  ),
+                ),
+                // Fixed bottom buttons
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.background,
+                      border: Border(
+                        top: BorderSide(
+                          color: Theme.of(context).colorScheme.border,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: OrderActionButtons(order: displayOrder),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }

@@ -16,7 +16,7 @@ class OrderDeliveryInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Delivery Info',
+            'Info Pengiriman',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const Gap(12),

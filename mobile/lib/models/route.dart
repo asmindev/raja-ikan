@@ -34,14 +34,29 @@ class RouteWaypoint {
   });
 
   factory RouteWaypoint.fromJson(Map<String, dynamic> json) {
-    return RouteWaypoint(
-      waypointIndex: json['waypoint_index'] as int?,
-      tripsIdx: json['trips_idx'] as int?,
-      latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
-      longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
-      orderId: json['order_id'] as int?,
-      customerName: json['customer_name'] as String?,
-    );
+    print('🔍 RouteWaypoint.fromJson - RAW JSON: $json');
+    try {
+      final waypoint = RouteWaypoint(
+        waypointIndex: json['waypoint_index'] != null
+            ? int.tryParse(json['waypoint_index'].toString())
+            : null,
+        tripsIdx: json['trips_idx'] != null
+            ? int.tryParse(json['trips_idx'].toString())
+            : null,
+        latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
+        longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
+        orderId: json['order_id'] != null
+            ? int.tryParse(json['order_id'].toString())
+            : null,
+        customerName: json['customer_name'] as String?,
+      );
+      print('✅ RouteWaypoint created: orderId=${waypoint.orderId}');
+      return waypoint;
+    } catch (e, stackTrace) {
+      print('❌ ERROR in RouteWaypoint.fromJson: $e');
+      print('📍 Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 }
 
@@ -73,45 +88,60 @@ class DeliveryRoute {
   });
 
   factory DeliveryRoute.fromJson(Map<String, dynamic> json) {
-    List<int> optimizedOrder = [];
-    if (json['optimized_order'] != null && json['optimized_order'] is List) {
-      optimizedOrder = (json['optimized_order'] as List)
-          .map((e) => e as int)
-          .toList();
-    }
+    print('🔍 DeliveryRoute.fromJson - RAW JSON: $json');
+    print('🔍 DeliveryRoute - id type: ${json['id'].runtimeType}, value: ${json['id']}');
 
-    List<RouteWaypoint> waypoints = [];
-    if (json['waypoints'] != null && json['waypoints'] is List) {
-      waypoints = (json['waypoints'] as List)
-          .map((e) => RouteWaypoint.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
+    try {
+      List<int> optimizedOrder = [];
+      if (json['optimized_order'] != null && json['optimized_order'] is List) {
+        print('🔍 Parsing optimized_order: ${json['optimized_order']}');
+        optimizedOrder = (json['optimized_order'] as List)
+            .map((e) => int.tryParse(e.toString()) ?? 0)
+            .toList();
+      }
 
-    return DeliveryRoute(
-      id: json['id'] as int,
-      driverId: json['driver_id'] as int,
-      status: json['status'] as String,
-      totalDistance: json['total_distance'] != null
-          ? double.tryParse(json['total_distance'].toString())
-          : null,
-      totalDuration: json['estimated_duration'] != null
-          ? double.tryParse(json['estimated_duration'].toString())
-          : (json['total_duration'] != null
-                ? double.tryParse(json['total_duration'].toString())
-                : null),
-      osrmUrl: json['osrm_url'] as String?,
-      optimizedOrder: optimizedOrder,
-      waypoints: waypoints,
-      startedAt: json['started_at'] != null && json['started_at'] != ''
-          ? DateTime.tryParse(json['started_at'].toString())
-          : null,
-      completedAt: json['completed_at'] != null && json['completed_at'] != ''
-          ? DateTime.tryParse(json['completed_at'].toString())
-          : null,
-      createdAt: json['created_at'] != null && json['created_at'] != ''
-          ? (DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now())
-          : DateTime.now(),
-    );
+      List<RouteWaypoint> waypoints = [];
+      if (json['waypoints'] != null && json['waypoints'] is List) {
+        print('🔍 Parsing ${(json['waypoints'] as List).length} waypoints...');
+        waypoints = (json['waypoints'] as List)
+            .map((e) => RouteWaypoint.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+
+      final route = DeliveryRoute(
+        id: int.tryParse(json['id'].toString()) ?? 0,
+        driverId: int.tryParse(json['driver_id'].toString()) ?? 0,
+        status: json['status'] as String,
+        totalDistance: json['total_distance'] != null
+            ? double.tryParse(json['total_distance'].toString())
+            : null,
+        totalDuration: json['estimated_duration'] != null
+            ? double.tryParse(json['estimated_duration'].toString())
+            : (json['total_duration'] != null
+                  ? double.tryParse(json['total_duration'].toString())
+                  : null),
+        osrmUrl: json['osrm_url'] as String?,
+        optimizedOrder: optimizedOrder,
+        waypoints: waypoints,
+        startedAt: json['started_at'] != null && json['started_at'] != ''
+            ? DateTime.tryParse(json['started_at'].toString())
+            : null,
+        completedAt: json['completed_at'] != null && json['completed_at'] != ''
+            ? DateTime.tryParse(json['completed_at'].toString())
+            : null,
+        createdAt: json['created_at'] != null && json['created_at'] != ''
+            ? (DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now())
+            : DateTime.now(),
+      );
+
+      print('✅ DeliveryRoute created: id=${route.id}, status=${route.status}, waypoints=${route.waypoints.length}');
+      return route;
+    } catch (e, stackTrace) {
+      print('❌ ERROR in DeliveryRoute.fromJson: $e');
+      print('📍 Stack trace: $stackTrace');
+      print('📋 Full JSON that caused error: $json');
+      rethrow;
+    }
   }
 
   // Helper getters

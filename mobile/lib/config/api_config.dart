@@ -13,8 +13,8 @@ class ApiConfig {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         // change to ngrok url if wireless android is enabled
-        // return https://your-ngrok-url.ngrok.io
-        return 'http://10.0.2.2:8000'; // Android emulator to host
+        return 'https://rajaikan.zettdev.my.id';
+        // return 'http://10.0.2.2:8000'; // Android emulator to host
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
       case TargetPlatform.windows:

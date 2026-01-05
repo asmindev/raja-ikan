@@ -47,19 +47,25 @@ class ActiveRouteCard extends StatelessWidget {
     final remainingOrders = totalOrders - completedOrders;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF34D399)],
+          colors: [
+            Color(0xFF047857), // Darker emerald
+            Color(0xFF059669),
+            Color(0xFF10B981),
+            Color(0xFF34D399),
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF059669).withValues(alpha: 0.3),
-            blurRadius: 20,
+            color: const Color(0xFF059669).withValues(alpha: 0.4),
+            blurRadius: 24,
             offset: const Offset(0, 8),
+            spreadRadius: 2,
           ),
         ],
       ),
@@ -69,7 +75,7 @@ class ActiveRouteCard extends StatelessWidget {
           onTap: onContinue,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -104,8 +110,8 @@ class ActiveRouteCard extends StatelessWidget {
                           const Gap(2),
                           Text(
                             route.status == 'delivering'
-                                ? 'Delivery in progress'
-                                : 'Ready to start',
+                                ? 'Pengiriman sedang berlangsung'
+                                : 'Siap untuk memulai',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.white.withValues(alpha: 0.9),
@@ -124,7 +130,7 @@ class ActiveRouteCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '$remainingOrders left',
+                        '$remainingOrders tersisa',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -135,7 +141,7 @@ class ActiveRouteCard extends StatelessWidget {
                   ],
                 ),
 
-                const Gap(16),
+                const Gap(14),
 
                 // Progress Info
                 Row(
@@ -147,7 +153,7 @@ class ActiveRouteCard extends StatelessWidget {
                     ),
                     const Gap(6),
                     Text(
-                      '$completedOrders of $totalOrders orders completed',
+                      '$completedOrders dari $totalOrders pesanan selesai',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.9),
@@ -162,10 +168,10 @@ class ActiveRouteCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: SizedBox(
-                    height: 8,
+                    height: 6,
                     child: LinearProgressIndicator(
                       value: progress,
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
+                      backgroundColor: Colors.white.withValues(alpha: 0.25),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Colors.white,
                       ),
@@ -173,7 +179,7 @@ class ActiveRouteCard extends StatelessWidget {
                   ),
                 ),
 
-                const Gap(16),
+                const Gap(14),
 
                 // Route Stats
                 Row(
@@ -181,7 +187,7 @@ class ActiveRouteCard extends StatelessWidget {
                     Expanded(
                       child: _buildStatItem(
                         Icons.location_on,
-                        '${route.totalStops} stops',
+                        '${route.totalStops} pemberhentian',
                       ),
                     ),
                     Expanded(
@@ -203,15 +209,22 @@ class ActiveRouteCard extends StatelessWidget {
                   ],
                 ),
 
-                const Gap(16),
+                const Gap(14),
 
                 // Continue Button
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 11),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -224,8 +237,8 @@ class ActiveRouteCard extends StatelessWidget {
                       const Gap(8),
                       Text(
                         route.status == 'delivering'
-                            ? 'Continue Delivery'
-                            : 'View Route Map',
+                            ? 'Lanjutkan Pengiriman'
+                            : 'Lihat Peta Rute',
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

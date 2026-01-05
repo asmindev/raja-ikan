@@ -1,20 +1,23 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:mobile/models/order.dart';
+import 'order_status_badge.dart';
 
 class OrderDetailHeader extends StatelessWidget {
   final OrderModel order;
   final bool isLoading;
+  final String status;
 
   const OrderDetailHeader({
     super.key,
     required this.order,
     this.isLoading = false,
+    required this.status,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -57,9 +60,9 @@ class OrderDetailHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Order #${order.id}',
+                    'Pesanan #${order.id}',
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -68,7 +71,7 @@ class OrderDetailHeader extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Order Details',
+                        'Detail Pesanan',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withValues(alpha: 0.9),
@@ -87,6 +90,9 @@ class OrderDetailHeader extends StatelessWidget {
                 ],
               ),
             ),
+            const Gap(10),
+            // Status Badge
+            OrderStatusBadge(status: status),
           ],
         ),
       ),

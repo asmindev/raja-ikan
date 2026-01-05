@@ -18,7 +18,7 @@ class ProfilePage extends ConsumerWidget {
     return Scaffold(
       headers: [
         Container(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 18),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -36,8 +36,8 @@ class ProfilePage extends ConsumerWidget {
               children: [
                 // Profile Picture
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
@@ -49,11 +49,11 @@ class ProfilePage extends ConsumerWidget {
                     color: Colors.white,
                   ),
                 ),
-                const Gap(16),
+                const Gap(12),
                 Text(
                   user?.name ?? 'Driver',
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -111,7 +111,7 @@ class ProfilePage extends ConsumerWidget {
                         ),
                         const Gap(6),
                         Text(
-                          'Completed',
+                          'Selesai',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.9),
@@ -180,7 +180,7 @@ class ProfilePage extends ConsumerWidget {
                         ),
                         const Gap(6),
                         Text(
-                          'Completed',
+                          'Selesai',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.9),
@@ -206,7 +206,7 @@ class ProfilePage extends ConsumerWidget {
                 _buildMenuItem(
                   context: context,
                   icon: LucideIcons.user,
-                  title: 'Personal Information',
+                  title: 'Informasi Pribadi',
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -219,21 +219,21 @@ class ProfilePage extends ConsumerWidget {
                 _buildMenuItem(
                   context: context,
                   icon: LucideIcons.bell,
-                  title: 'Notifications',
+                  title: 'Notifikasi',
                   onTap: () {},
                 ),
                 const Gap(8),
                 _buildMenuItem(
                   context: context,
                   icon: LucideIcons.settings,
-                  title: 'Settings',
+                  title: 'Pengaturan',
                   onTap: () {},
                 ),
                 const Gap(8),
                 _buildMenuItem(
                   context: context,
                   icon: LucideIcons.circleHelp,
-                  title: 'Help & Support',
+                  title: 'Bantuan & Dukungan',
                   onTap: () {},
                 ),
               ],
@@ -258,35 +258,23 @@ class ProfilePage extends ConsumerWidget {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Logout'),
-                      content: const Text('Are you sure you want to logout?'),
+                      title: const Text('Keluar'),
+                      content: const Text('Apakah Anda yakin ingin keluar?'),
                       actions: [
                         OutlineButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                          child: const Text('Batal'),
                         ),
                         DestructiveButton(
                           onPressed: () async {
-                            Navigator.pop(context); // Close dialog
+                            Navigator.pop(context); // Close confirmation dialog
 
-                            // Show loading
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-
-                            // Call logout API
+                            // Call logout (instant - clears local storage immediately)
                             final authService = AuthService();
                             await authService.logout();
 
-                            // Close loading dialog
+                            // Navigate to login page and clear all routes
                             if (context.mounted) {
-                              Navigator.pop(context);
-
-                              // Navigate to login page and clear all routes
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
                                   builder: (context) => const LoginPage(),
@@ -295,7 +283,7 @@ class ProfilePage extends ConsumerWidget {
                               );
                             }
                           },
-                          child: const Text('Logout'),
+                          child: const Text('Keluar'),
                         ),
                       ],
                     ),
@@ -306,7 +294,7 @@ class ProfilePage extends ConsumerWidget {
                   children: [
                     Icon(LucideIcons.logOut, size: 18),
                     Gap(8),
-                    Text('Logout'),
+                    Text('Keluar'),
                   ],
                 ),
               ),

@@ -26,7 +26,7 @@ class OrderActionButtons extends ConsumerWidget {
           children: [
             const CircularProgressIndicator(),
             const Gap(16),
-            const Text('Starting delivery...'),
+            const Text('Memulai pengiriman...'),
           ],
         ),
       ),
@@ -43,9 +43,9 @@ class OrderActionButtons extends ConsumerWidget {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Location Error'),
+              title: const Text('Error Lokasi'),
               content: const Text(
-                'Could not get current location. Please enable location services.',
+                'Tidak dapat mendapatkan lokasi. Mohon aktifkan layanan lokasi.',
               ),
               actions: [
                 PrimaryButton(
@@ -84,7 +84,7 @@ class OrderActionButtons extends ConsumerWidget {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Error'),
-              content: Text(result['message'] ?? 'Failed to start delivery'),
+              content: Text(result['message'] ?? 'Gagal memulai pengiriman'),
               actions: [
                 PrimaryButton(
                   onPressed: () => Navigator.pop(context),
@@ -106,7 +106,7 @@ class OrderActionButtons extends ConsumerWidget {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Error'),
-            content: Text('Failed to start delivery: $e'),
+            content: Text('Gagal memulai pengiriman: $e'),
             actions: [
               PrimaryButton(
                 onPressed: () => Navigator.pop(context),
@@ -134,27 +134,27 @@ class OrderActionButtons extends ConsumerWidget {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Cancel Order'),
+                        title: const Text('Batalkan Pesanan'),
                         content: const Text(
-                          'Are you sure you want to cancel this order?',
+                          'Apakah Anda yakin ingin membatalkan pesanan ini?',
                         ),
                         actions: [
                           OutlineButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('No'),
+                            child: const Text('Tidak'),
                           ),
                           DestructiveButton(
                             onPressed: () {
                               Navigator.pop(context);
                               // TODO: Call cancel API
                             },
-                            child: const Text('Yes, Cancel'),
+                            child: const Text('Ya, Batalkan'),
                           ),
                         ],
                       ),
                     );
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Batalkan'),
                 ),
               ),
               const Gap(12),
@@ -171,7 +171,7 @@ class OrderActionButtons extends ConsumerWidget {
                   ),
                   child: PrimaryButton(
                     onPressed: () => _startDelivery(context, ref, order),
-                    child: const Text('Delivery'),
+                    child: const Text('Mulai Pengiriman'),
                   ),
                 ),
               ),
@@ -194,7 +194,7 @@ class OrderActionButtons extends ConsumerWidget {
           onPressed: () {
             // TODO: Complete delivery
           },
-          child: const Text('Complete Delivery'),
+          child: const Text('Selesaikan Pengiriman'),
         ),
       );
     }

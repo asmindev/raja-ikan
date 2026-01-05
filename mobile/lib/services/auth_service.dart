@@ -98,24 +98,32 @@ class AuthService {
     try {
       final token = await TokenStorage.getToken();
 
+      // Clear local storage IMMEDIATELY (instant logout for user)
+      await TokenStorage.clearAll();
+
+      // Notify server in background (fire-and-forget with timeout)
       if (token != null) {
-        // Call logout endpoint
-        await http.post(
+        http.post(
           Uri.parse('$baseUrl/logout'),
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer $token',
           },
-        );
+        ).timeout(
+          const Duration(seconds: 3),
+          onTimeout: () {
+            // Ignore timeout - user is already logged out locally
+            return http.Response('', 408);
+          },
+        ).catchError((_) {
+          // Ignore all errors - user is already logged out locally
+        });
       }
-
-      // Clear local storage regardless of API call result
-      await TokenStorage.clearAll();
 
       return {'success': true, 'message': 'Logout successful'};
     } catch (e) {
-      // Clear local storage even if API call fails
+      // Clear local storage even if something fails
       await TokenStorage.clearAll();
 
       return {'success': true, 'message': 'Logout successful'};

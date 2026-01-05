@@ -9,6 +9,7 @@ import 'widgets/empty_state.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/active_route_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../delivery/page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -52,14 +53,19 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  String _getGreeting() {
+  String _getGreeting(WidgetRef ref) {
+    final user = ref.watch(authProvider).user;
+    final name = user?.name?.split(' ').first ?? 'Driver';
     final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Good Morning';
-    } else if (hour < 17) {
-      return 'Good Afternoon';
+
+    if (hour < 11) {
+      return 'Selamat pagi, $name';
+    } else if (hour < 15) {
+      return 'Selamat siang, $name';
+    } else if (hour < 18) {
+      return 'Selamat sore, $name';
     } else {
-      return 'Good Evening';
+      return 'Selamat malam, $name';
     }
   }
 
@@ -88,7 +94,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Scaffold(
       headers: [
         Container(
-          padding: const EdgeInsets.fromLTRB(24, 46, 24, 40),
+          padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -110,19 +116,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getGreeting(),
+                        _getGreeting(ref),
                         style: const TextStyle(
-                          fontSize: 32,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
                           letterSpacing: -0.5,
                           color: Colors.white,
                         ),
                       ),
-                      const Gap(8),
+                      const Gap(6),
                       Text(
-                        'Ready to deliver todays?',
+                        'Siap untuk mengantar hari ini?',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
@@ -131,20 +137,26 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: Colors.white.withValues(alpha: 0.25),
                       width: 1,
                     ),
                   ),
-                  child: OutlineButton(
-                    density: ButtonDensity.icon,
-                    onPressed: () {},
-                    child: const Icon(
-                      LucideIcons.bell,
-                      size: 20,
-                      color: Colors.white,
+                  child: M.Material(
+                    color: Colors.transparent,
+                    child: M.InkWell(
+                      onTap: () {},
+                      borderRadius: BorderRadius.circular(12),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Icon(
+                          LucideIcons.bell,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -180,7 +192,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: StatsCard(
                       icon: LucideIcons.circleCheck,
                       value: statsState.completedCount.toString(),
-                      label: 'Completed Today',
+                      label: 'Selesai Hari Ini',
                       iconColor: const Color(0xFF059669),
                       backgroundColor: const Color(
                         0xFF059669,
@@ -196,7 +208,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         symbol: 'Rp',
                         decimalDigits: 0,
                       ).format(statsState.totalEarnings),
-                      label: 'Earnings Today',
+                      label: 'Pendapatan Hari Ini',
                       iconColor: const Color(0xFF10B981),
                       backgroundColor: const Color(
                         0xFF10B981,
@@ -205,13 +217,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 ],
               ),
-              const Gap(20),
+              const Gap(16),
 
               // Today's Orders Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Today\'s Orders').large().semiBold(),
+                  const Text('Pesanan Hari Ini').large().semiBold(),
                   if (allTodayOrders.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -223,7 +235,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '${allTodayOrders.length} orders',
+                        '${allTodayOrders.length} pesanan',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -268,7 +280,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   }
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: OrderCard(
                       orderNumber: '#${order.id}',
                       customerName: order.customerName ?? 'Unknown',

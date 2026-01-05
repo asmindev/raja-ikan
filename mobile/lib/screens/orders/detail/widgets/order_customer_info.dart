@@ -17,7 +17,7 @@ class OrderCustomerInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Customer',
+            'Pelanggan',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const Gap(12),
