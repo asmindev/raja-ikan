@@ -397,7 +397,8 @@ class RouteController extends Controller
             'start_location.longitude' => 'required|numeric',
         ]);
 
-        if ($route->driver_id !== $request->user()->id) {
+        \Illuminate\Support\Facades\Log::info("DEBUG_START_ROUTE", ["route_driver_id" => $route->driver_id, "user_id" => $request->user()->id, "driver_id_type" => gettype($route->driver_id), "user_id_type" => gettype($request->user()->id)]);
+        if ((int) $route->driver_id !== (int) $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -541,7 +542,8 @@ class RouteController extends Controller
      */
     public function start(Route $route, Request $request)
     {
-        if ($route->driver_id !== $request->user()->id) {
+        \Illuminate\Support\Facades\Log::info("DEBUG_START_ROUTE", ["route_driver_id" => $route->driver_id, "user_id" => $request->user()->id, "driver_id_type" => gettype($route->driver_id), "user_id_type" => gettype($request->user()->id)]);
+        if ((int) $route->driver_id !== (int) $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -572,7 +574,8 @@ class RouteController extends Controller
      */
     public function startNavigation(Route $route, Request $request, WhatsAppService $whatsapp)
     {
-        if ($route->driver_id !== $request->user()->id) {
+        \Illuminate\Support\Facades\Log::info("DEBUG_START_ROUTE", ["route_driver_id" => $route->driver_id, "user_id" => $request->user()->id, "driver_id_type" => gettype($route->driver_id), "user_id_type" => gettype($request->user()->id)]);
+        if ((int) $route->driver_id !== (int) $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -612,7 +615,7 @@ class RouteController extends Controller
      */
     public function completeOrder(Order $order, Request $request, WhatsAppService $whatsapp)
     {
-        if ($order->driver_id !== $request->user()->id) {
+        if ((int) $order->driver_id !== (int) $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -639,7 +642,8 @@ class RouteController extends Controller
      */
     public function complete(Route $route, Request $request)
     {
-        if ($route->driver_id !== $request->user()->id) {
+        \Illuminate\Support\Facades\Log::info("DEBUG_START_ROUTE", ["route_driver_id" => $route->driver_id, "user_id" => $request->user()->id, "driver_id_type" => gettype($route->driver_id), "user_id_type" => gettype($request->user()->id)]);
+        if ((int) $route->driver_id !== (int) $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
