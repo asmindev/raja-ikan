@@ -4,9 +4,7 @@ import {
     ChevronRight,
     GalleryVerticalEnd,
     LayoutDashboard,
-    MessageCircle,
     Package,
-    Settings,
     Truck,
     Users,
 } from 'lucide-react';
@@ -78,15 +76,15 @@ const navigation: NavItem[] = [
                 ],
             },
             { label: 'Products', href: '/admin/products', icon: Package },
-            { label: 'Messages', href: '/admin/messages', icon: MessageCircle },
+            // { label: 'Messages', href: '/admin/messages', icon: MessageCircle },
         ],
     },
-    {
-        label: 'System',
-        children: [
-            { label: 'Settings', href: '/admin/settings', icon: Settings },
-        ],
-    },
+    // {
+    //     label: 'System',
+    //     children: [
+    //         { label: 'Settings', href: '/admin/settings', icon: Settings },
+    //     ],
+    // },
 ];
 
 type AdminSidebarProps = {
