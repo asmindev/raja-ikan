@@ -153,12 +153,11 @@ Route::prefix('api/v1')->group(function () {
         Route::post('orders', [ApiOrderController::class, 'store'])->name('api.v1.orders.store')
             ->middleware('can:place-orders');
 
-        // Dashboard (admin and driver)
-        Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats'])
-            ->middleware('can:view-analytics');
-
         // Driver-only routes
         Route::middleware('role:driver')->group(function () {
+            // Dashboard stats for driver
+            Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
+
             Route::get('routes/pending-orders', [\App\Http\Controllers\Api\RouteController::class, 'pendingOrders']);
             Route::get('routes/active', [\App\Http\Controllers\Api\RouteController::class, 'active']);
             Route::post('routes/draft', [\App\Http\Controllers\Api\RouteController::class, 'createDraft']);
@@ -166,6 +165,7 @@ Route::prefix('api/v1')->group(function () {
             Route::post('routes/optimize', [\App\Http\Controllers\Api\RouteController::class, 'createAndOptimize']);
             Route::post('routes/{route}/start', [\App\Http\Controllers\Api\RouteController::class, 'start']);
             Route::post('routes/{route}/start-navigation', [\App\Http\Controllers\Api\RouteController::class, 'startNavigation']);
+            Route::delete('routes/{route}/cancel', [\App\Http\Controllers\Api\RouteController::class, 'cancel']);
             Route::put('orders/{order}/complete', [\App\Http\Controllers\Api\RouteController::class, 'completeOrder']);
             Route::post('routes/{route}/complete', [\App\Http\Controllers\Api\RouteController::class, 'complete']);
         });

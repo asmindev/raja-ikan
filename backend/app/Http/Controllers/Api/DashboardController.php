@@ -15,24 +15,23 @@ class DashboardController extends Controller
     public function stats(Request $request)
     {
         $user = $request->user();
-        
+
         // Get today's date range
         $today = Carbon::today();
         $tomorrow = Carbon::tomorrow();
 
-        // Base query for driver's orders
-        $baseQuery = Order::query()
+        // Completed today (based on completed_at)
+        $completedCount = Order::query()
             ->where('driver_id', $user->id)
-            ->whereBetween('created_at', [$today, $tomorrow]);
-
-        // Completed today
-        $completedCount = (clone $baseQuery)
             ->where('status', 'completed')
+            ->whereBetween('completed_at', [$today, $tomorrow])
             ->count();
 
         // Total earnings from completed orders today
-        $totalEarnings = (clone $baseQuery)
+        $totalEarnings = Order::query()
+            ->where('driver_id', $user->id)
             ->where('status', 'completed')
+            ->whereBetween('completed_at', [$today, $tomorrow])
             ->sum('total');
 
         // Pending orders assigned to this driver

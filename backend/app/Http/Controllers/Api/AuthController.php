@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -25,6 +26,8 @@ class AuthController extends Controller
             ->first();
 
         // Check if user exists and is a driver
+        $role = $user ? $user->role : null;
+        Log::info("Login attempt for email: {$request->email}, role: {$role}");
         if (!$user || $user->role !== 'driver') {
             throw ValidationException::withMessages([
                 'email' => ['Access denied. Driver account required.'],

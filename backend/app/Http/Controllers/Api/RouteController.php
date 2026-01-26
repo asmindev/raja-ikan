@@ -405,10 +405,11 @@ class RouteController extends Controller
             ], 403);
         }
 
-        if (!in_array($route->status, ['draft', 'planned'])) {
+        // Allow re-optimization for draft, planned, and active status (not delivering or completed)
+        if (!in_array($route->status, ['draft', 'planned', 'active'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Route must be in draft or planned status',
+                'message' => 'Route must be in draft, planned, or active status. Cannot re-optimize once delivery has started.',
             ], 400);
         }
 
@@ -484,6 +485,7 @@ class RouteController extends Controller
             }
 
             // Update route with optimization results
+            // Status remains 'active' for re-optimization, or becomes 'active' for first optimization
             $route->update([
                 'status' => 'active',
                 'total_distance' => $optimizationResponse['total_distance'] ?? 0,
@@ -494,6 +496,13 @@ class RouteController extends Controller
                 'legs' => $optimizationResponse['legs'] ?? [],
                 'geometry' => $optimizationResponse['geometry'] ?? [],
                 'optimized_at' => now(),
+            ]);
+
+            Log::info('Route re-optimized successfully', [
+                'route_id' => $route->id,
+                'status' => $route->status,
+                'total_distance' => $route->total_distance,
+                'estimated_duration' => $route->estimated_duration,
             ]);
 
             // Update order sequences in pivot table
@@ -625,6 +634,7 @@ class RouteController extends Controller
         $order->update([
             'status' => 'completed',
             'delivery_at' => now(),
+            'completed_at' => now(),
         ]);
 
         // Send WhatsApp notification to customer
@@ -650,10 +660,10 @@ class RouteController extends Controller
             ], 403);
         }
 
-        if ($route->status !== 'active') {
+        if (!in_array($route->status, ['active', 'delivering'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Route is not active',
+                'message' => 'Route is not active or delivering',
             ], 400);
         }
 
@@ -667,5 +677,57 @@ class RouteController extends Controller
             'route' => $route,
             'message' => 'Route completed successfully',
         ]);
+    }
+
+    /**
+     * Cancel route (only if not started delivering)
+     */
+    public function cancel(Request $request, Route $route)
+    {
+        $driverId = $request->user()->id;
+
+        // Check if route belongs to driver
+        if ($route->driver_id !== $driverId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to cancel this route',
+            ], 403);
+        }
+
+        // Can only cancel if not started delivering
+        if ($route->status === 'delivering' || $route->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot cancel route that is already in progress or completed',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Set orders back to pending
+            $route->orders()->update(['status' => 'pending']);
+
+            // Delete route
+            $route->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Route cancelled successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to cancel route', [
+                'route_id' => $route->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel route: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
