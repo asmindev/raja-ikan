@@ -4,11 +4,48 @@ import '../../../models/route.dart';
 class RouteHeader extends StatelessWidget {
   final DeliveryRoute route;
   final VoidCallback onBack;
+  final VoidCallback? onCancel;
 
-  const RouteHeader({super.key, required this.route, required this.onBack});
+  const RouteHeader({
+    super.key,
+    required this.route,
+    required this.onBack,
+    this.onCancel,
+  });
+
+  void _showCancelDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Batalkan Rute?'),
+        content: const Text(
+          'Apakah Anda yakin ingin membatalkan rute ini? Semua pesanan akan dikembalikan ke daftar pending.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (onCancel != null) onCancel!();
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Ya, Batalkan'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final canCancel =
+        route.status != 'delivering' &&
+        route.status != 'completed' &&
+        onCancel != null;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -59,6 +96,20 @@ class RouteHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (canCancel) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _showCancelDialog(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
         ],
       ),
     );

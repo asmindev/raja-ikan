@@ -98,6 +98,39 @@ class OrderService {
 
     final data = json.decode(response.body) as Map<String, dynamic>;
     debugPrint('✅ [OrderService] Stats loaded');
+    debugPrint('📊 [OrderService] Stats data: $data');
     return data;
+  }
+
+  // Mark order as delivered/completed
+  Future<Map<String, dynamic>> markAsDelivered(int orderId) async {
+    final url = '$baseUrl/orders/$orderId/complete';
+
+    debugPrint('📦 [OrderService] Marking order $orderId as delivered');
+    final response = await HttpInterceptor.put(url);
+
+    if (response.statusCode == 401) {
+      debugPrint('🔒 [OrderService] 401 detected');
+      return {'success': false, 'message': 'Unauthorized'};
+    }
+
+    if (response.statusCode != 200) {
+      debugPrint(
+        '❌ [OrderService] Failed to mark as delivered: ${response.statusCode}',
+      );
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Failed to mark as delivered',
+      };
+    }
+
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    debugPrint('✅ [OrderService] Order marked as delivered');
+    return {
+      'success': true,
+      'message': data['message'] ?? 'Order delivered successfully',
+      'order': data['data'] != null ? OrderModel.fromJson(data['data']) : null,
+    };
   }
 }

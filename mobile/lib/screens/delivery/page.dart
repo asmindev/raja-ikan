@@ -149,7 +149,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
-                  'Rute berhasil dioptimalkan! Klik "Mulai Navigasi" untuk memulai.',
+                  'Rute berhasil dioptimalkan dan siap untuk navigasi!',
                 ),
                 backgroundColor: Color(0xFF059669),
                 duration: Duration(seconds: 3),
@@ -159,17 +159,34 @@ class _RouteMapPageState extends State<RouteMapPage> {
         }
       } else {
         // Already optimized, start navigation
-        // If planned, start route first (to active)
+        // Flow: planned -> active -> delivering
         if (_currentRoute.status == 'planned') {
+          // Step 1: Accept route (planned -> active)
           result = await _routeService.startRoute(_currentRoute.id);
           if (result['success'] == true) {
-            // Then start navigation (to delivering)
-            final activeRoute = result['route'] as DeliveryRoute;
-            result = await _routeService.startNavigation(activeRoute.id);
+            setState(() {
+              _currentRoute = result['route'] as DeliveryRoute;
+            });
+
+            // Step 2: Start navigation (active -> delivering)
+            result = await _routeService.startNavigation(_currentRoute.id);
           }
-        } else {
-          // If active, just start navigation
+        } else if (_currentRoute.status == 'active') {
+          // Already active, just start navigation (active -> delivering)
           result = await _routeService.startNavigation(_currentRoute.id);
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Status rute tidak valid: ${_currentRoute.status}. Harap refresh halaman.',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          setState(() => _isLoading = false);
+          return;
         }
 
         if (result['success'] == true) {
@@ -217,6 +234,165 @@ class _RouteMapPageState extends State<RouteMapPage> {
     }
   }
 
+  // Re-optimize route from current position
+  Future<void> _reOptimizeRoute() async {
+    setState(() => _isLoading = true);
+
+    try {
+      // Get current location
+      final locationService = LocationService();
+      final location = await locationService.getCurrentLocation();
+
+      if (location == null) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak bisa mendapatkan lokasi. Aktifkan GPS.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Re-optimize from current position
+      final result = await _routeService.optimizeAndStart(
+        _currentRoute.id,
+        location,
+      );
+
+      if (result['success'] == true) {
+        setState(() {
+          _currentRoute = result['route'] as DeliveryRoute;
+          _sortedOrders = _sortOrdersByWaypoints();
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Rute berhasil di-optimasi ulang dari lokasi Anda sekarang!',
+              ),
+              backgroundColor: Color(0xFF059669),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result['message'] ?? 'Gagal mengoptimasi ulang rute',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // Cancel route
+  Future<void> _cancelRoute() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await _routeService.cancelRoute(_currentRoute.id);
+
+      if (result['success'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Rute berhasil dibatalkan'),
+              backgroundColor: const Color(0xFF059669),
+            ),
+          );
+          // Return to previous page with cancelled status
+          Navigator.pop(context, 'cancelled');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Gagal membatalkan rute'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // Complete route
+  Future<void> _completeRoute() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await _routeService.completeRoute(_currentRoute.id);
+
+      if (result['success'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Rute berhasil diselesaikan!'),
+              backgroundColor: const Color(0xFF059669),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+
+          // Wait a bit for the message to show and backend to update
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          // Return to home page (pop all routes until first route)
+          if (mounted) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Gagal menyelesaikan rute'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get safe area padding
@@ -249,6 +425,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
                     Navigator.pop(context);
                   }
                 },
+                onCancel: _cancelRoute,
               ),
             ),
 
@@ -262,7 +439,33 @@ class _RouteMapPageState extends State<RouteMapPage> {
                 orders: _sortedOrders,
                 isLoading: _isLoading,
                 onStartDelivery: _startDelivery,
+                onReOptimize: _reOptimizeRoute,
+                onRouteCompleted: _completeRoute,
                 isDraft: _isDraft,
+                onOrderCompleted: () async {
+                  // Refresh orders after completion
+                  try {
+                    // Fetch updated route data
+                    final result = await _routeService.getRoute(
+                      _currentRoute.id,
+                    );
+                    if (result['success'] == true) {
+                      setState(() {
+                        _currentRoute = result['route'] as DeliveryRoute;
+                        _sortedOrders = _sortOrdersByWaypoints();
+                      });
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error refreshing orders: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
               )
             else
               // Route completed - show completion info

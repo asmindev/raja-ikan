@@ -4,6 +4,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart'
 import '../../../models/route.dart';
 import '../../../models/order.dart';
 import 'route_info_card.dart';
+import 'active_delivery_sheet.dart';
 import 'package:intl/intl.dart';
 
 class RouteBottomSheet extends StatelessWidget {
@@ -11,6 +12,9 @@ class RouteBottomSheet extends StatelessWidget {
   final List<OrderModel> orders;
   final bool isLoading;
   final VoidCallback onStartDelivery;
+  final VoidCallback? onOrderCompleted;
+  final VoidCallback? onReOptimize;
+  final VoidCallback? onRouteCompleted;
   final bool isDraft;
 
   const RouteBottomSheet({
@@ -19,6 +23,9 @@ class RouteBottomSheet extends StatelessWidget {
     required this.orders,
     required this.isLoading,
     required this.onStartDelivery,
+    this.onOrderCompleted,
+    this.onReOptimize,
+    this.onRouteCompleted,
     this.isDraft = false,
   });
 
@@ -477,7 +484,33 @@ class RouteBottomSheet extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => _openDrawer(context),
+                onTap: () {
+                  // If delivering, show active delivery sheet
+                  if (route.status == 'delivering') {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => DraggableScrollableSheet(
+                        initialChildSize: 0.7,
+                        minChildSize: 0.5,
+                        maxChildSize: 0.9,
+                        builder: (context, scrollController) =>
+                            ActiveDeliverySheet(
+                              orders: orders,
+                              onOrderCompleted: () {
+                                if (onOrderCompleted != null) {
+                                  onOrderCompleted!();
+                                }
+                              },
+                              onRouteCompleted: onRouteCompleted,
+                            ),
+                      ),
+                    );
+                  } else {
+                    _openDrawer(context);
+                  }
+                },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   width: 56,
@@ -486,24 +519,27 @@ class RouteBottomSheet extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      const Icon(
-                        Icons.info_outline_rounded,
-                        color: Color(0xFF059669),
+                      Icon(
+                        route.status == 'delivering'
+                            ? Icons.assignment_turned_in_outlined
+                            : Icons.info_outline_rounded,
+                        color: const Color(0xFF059669),
                         size: 28,
                       ),
                       // Badge indicator
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEF4444),
-                            shape: BoxShape.circle,
+                      if (route.status != 'delivering')
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -511,66 +547,118 @@ class RouteBottomSheet extends StatelessWidget {
             ),
           ),
           const Gap(12),
-          // Action button (optimize/start navigation/delivering status)
+          // Action buttons (optimize/start navigation/delivering status)
           if (route.status != 'delivering')
             Expanded(
-              child: Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.4),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: const Color(0x00000000),
-                  child: InkWell(
-                    onTap: isLoading ? null : onStartDelivery,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Center(
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Color(0xFFFFFFFF),
+              child: Row(
+                children: [
+                  // Re-optimize button - show for planned/active routes
+                  if (!isDraft &&
+                      (route.status == 'planned' || route.status == 'active') &&
+                      onReOptimize != null)
+                    Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF10B981),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: isLoading ? null : onReOptimize,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Center(
+                              child: Icon(
+                                Icons.refresh_rounded,
+                                color: const Color(0xFF10B981),
+                                size: 28,
                               ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  isDraft
-                                      ? Icons.route
-                                      : Icons.navigation_rounded,
-                                  color: const Color(0xFFFFFFFF),
-                                  size: 22,
-                                ),
-                                const Gap(10),
-                                Text(
-                                  isDraft ? 'Optimasi Rute' : 'Mulai Navigasi',
-                                  style: const TextStyle(
-                                    color: Color(0xFFFFFFFF),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ],
                             ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (!isDraft &&
+                      (route.status == 'planned' || route.status == 'active') &&
+                      onReOptimize != null)
+                    const Gap(12),
+                  // Main action button
+                  Expanded(
+                    child: Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withOpacity(0.4),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: const Color(0x00000000),
+                        child: InkWell(
+                          onTap: isLoading ? null : onStartDelivery,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Center(
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Color(0xFFFFFFFF),
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        isDraft
+                                            ? Icons.route
+                                            : Icons.navigation_rounded,
+                                        color: const Color(0xFFFFFFFF),
+                                        size: 22,
+                                      ),
+                                      const Gap(10),
+                                      Text(
+                                        isDraft
+                                            ? 'Optimasi Rute'
+                                            : 'Mulai Navigasi',
+                                        style: const TextStyle(
+                                          color: Color(0xFFFFFFFF),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             )
           else

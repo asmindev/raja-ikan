@@ -19,13 +19,29 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshData();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when app comes back to foreground
+      _refreshData();
+    }
   }
 
   Future<void> _refreshData() async {
@@ -76,6 +92,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     final availableOrders = ref.watch(availableOrdersProvider);
     final deliveringOrders = ref.watch(deliveringOrdersProvider);
     final completedOrders = ref.watch(completedOrdersProvider);
+
+    debugPrint(
+      '🏠 [HomePage] Building with statsState.completedCount: ${statsState.completedCount}',
+    );
 
     // Combine all today's orders
     final allTodayOrders = [
@@ -185,37 +205,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ],
 
-              // Stats Cards
-              Row(
-                children: [
-                  Expanded(
-                    child: StatsCard(
-                      icon: LucideIcons.circleCheck,
-                      value: statsState.completedCount.toString(),
-                      label: 'Selesai Hari Ini',
-                      iconColor: const Color(0xFF059669),
-                      backgroundColor: const Color(
-                        0xFF059669,
-                      ).withValues(alpha: 0.1),
-                    ),
-                  ),
-                  const Gap(12),
-                  Expanded(
-                    child: StatsCard(
-                      icon: LucideIcons.wallet,
-                      value: NumberFormat.compactCurrency(
-                        locale: 'id_ID',
-                        symbol: 'Rp',
-                        decimalDigits: 0,
-                      ).format(statsState.totalEarnings),
-                      label: 'Pendapatan Hari Ini',
-                      iconColor: const Color(0xFF10B981),
-                      backgroundColor: const Color(
-                        0xFF10B981,
-                      ).withValues(alpha: 0.1),
-                    ),
-                  ),
-                ],
+              // Stats Card
+              StatsCard(
+                icon: LucideIcons.circleCheck,
+                value: statsState.completedCount.toString(),
+                label: 'Selesai Hari Ini',
+                iconColor: const Color(0xFF059669),
+                backgroundColor: const Color(0xFF059669).withValues(alpha: 0.1),
               ),
               const Gap(16),
 

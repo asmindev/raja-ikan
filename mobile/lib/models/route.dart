@@ -21,8 +21,9 @@ class RouteWaypoint {
   final int? tripsIdx;
   final double latitude;
   final double longitude;
-  final int? orderId; // Link to order
+  final int? orderId; // Link to order (primary order ID)
   final String? customerName; // Customer name for display
+  final List<int>? orderIds; // All order IDs at this location (for grouping)
 
   RouteWaypoint({
     this.waypointIndex,
@@ -31,6 +32,7 @@ class RouteWaypoint {
     required this.longitude,
     this.orderId,
     this.customerName,
+    this.orderIds,
   });
 
   factory RouteWaypoint.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,11 @@ class RouteWaypoint {
             ? int.tryParse(json['order_id'].toString())
             : null,
         customerName: json['customer_name'] as String?,
+        orderIds: json['order_ids'] != null
+            ? (json['order_ids'] as List)
+                  .map((e) => int.tryParse(e.toString()) ?? 0)
+                  .toList()
+            : null,
       );
       print('✅ RouteWaypoint created: orderId=${waypoint.orderId}');
       return waypoint;
@@ -89,7 +96,9 @@ class DeliveryRoute {
 
   factory DeliveryRoute.fromJson(Map<String, dynamic> json) {
     print('🔍 DeliveryRoute.fromJson - RAW JSON: $json');
-    print('🔍 DeliveryRoute - id type: ${json['id'].runtimeType}, value: ${json['id']}');
+    print(
+      '🔍 DeliveryRoute - id type: ${json['id'].runtimeType}, value: ${json['id']}',
+    );
 
     try {
       List<int> optimizedOrder = [];
@@ -130,11 +139,14 @@ class DeliveryRoute {
             ? DateTime.tryParse(json['completed_at'].toString())
             : null,
         createdAt: json['created_at'] != null && json['created_at'] != ''
-            ? (DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now())
+            ? (DateTime.tryParse(json['created_at'].toString()) ??
+                  DateTime.now())
             : DateTime.now(),
       );
 
-      print('✅ DeliveryRoute created: id=${route.id}, status=${route.status}, waypoints=${route.waypoints.length}');
+      print(
+        '✅ DeliveryRoute created: id=${route.id}, status=${route.status}, waypoints=${route.waypoints.length}',
+      );
       return route;
     } catch (e, stackTrace) {
       print('❌ ERROR in DeliveryRoute.fromJson: $e');

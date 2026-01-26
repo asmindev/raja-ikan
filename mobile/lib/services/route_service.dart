@@ -313,27 +313,86 @@ class RouteService {
     }
   }
 
-  // Complete entire route
-  Future<Map<String, dynamic>> completeRoute(int routeId) async {
+  // Get single route with orders
+  Future<Map<String, dynamic>> getRoute(int routeId) async {
     try {
+      debugPrint('📍 [GET ROUTE] Fetching route ID: $routeId');
       final headers = await AuthService.getAuthHeaders();
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/routes/$routeId/complete'),
+      final response = await http.get(
+        Uri.parse('$baseUrl/routes/active'),
         headers: headers,
       );
 
+      debugPrint('📨 [GET ROUTE] Response Status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+
+        // Check if route data exists
+        if (data['route'] == null) {
+          return {'success': false, 'message': 'No active route found'};
+        }
+
+        return {
+          'success': true,
+          'route': DeliveryRoute.fromJson(data['route']),
+          'orders': (data['orders'] as List)
+              .map((order) => OrderModel.fromJson(order))
+              .toList(),
+          'message': 'Route fetched successfully',
+        };
+      } else {
+        return {'success': false, 'message': 'Failed to fetch route'};
+      }
+    } catch (e) {
+      debugPrint('💥 [GET ROUTE] Exception: $e');
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
+  // Complete entire route
+  Future<Map<String, dynamic>> completeRoute(int routeId) async {
+    try {
+      debugPrint('✅ [COMPLETE ROUTE] Completing route ID: $routeId');
+      final headers = await AuthService.getAuthHeaders();
+
+      final url = '$baseUrl/routes/$routeId/complete';
+      debugPrint('📡 [COMPLETE ROUTE] URL: $url');
+
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      debugPrint('📨 [COMPLETE ROUTE] Response Status: ${response.statusCode}');
+      debugPrint('📦 [COMPLETE ROUTE] Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        debugPrint('✅ [COMPLETE ROUTE] Success! Route completed.');
         return {
           'success': true,
           'route': DeliveryRoute.fromJson(data['route']),
           'message': data['message'] ?? 'Route completed successfully',
         };
       } else {
-        return {'success': false, 'message': 'Failed to complete route'};
+        final errorBody = response.body;
+        debugPrint(
+          '❌ [COMPLETE ROUTE] Failed with status ${response.statusCode}',
+        );
+        debugPrint('❌ [COMPLETE ROUTE] Error body: $errorBody');
+
+        try {
+          final errorData = json.decode(errorBody);
+          return {
+            'success': false,
+            'message': errorData['message'] ?? 'Failed to complete route',
+          };
+        } catch (e) {
+          return {'success': false, 'message': 'Failed to complete route'};
+        }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('💥 [COMPLETE ROUTE] Exception caught: $e');
+      debugPrint('📍 [COMPLETE ROUTE] Stack trace: $stackTrace');
       return {'success': false, 'message': 'Error: $e'};
     }
   }
@@ -355,6 +414,39 @@ class RouteService {
         return {'success': false, 'message': 'Failed to fetch route summary'};
       }
     } catch (e) {
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
+  // Cancel route (only if not started delivering)
+  Future<Map<String, dynamic>> cancelRoute(int routeId) async {
+    try {
+      debugPrint('❌ [CANCEL ROUTE] Cancelling route ID: $routeId');
+      final headers = await AuthService.getAuthHeaders();
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/routes/$routeId/cancel'),
+        headers: headers,
+      );
+
+      debugPrint('📨 [CANCEL ROUTE] Response Status: ${response.statusCode}');
+      debugPrint('📦 [CANCEL ROUTE] Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Route cancelled successfully',
+        };
+      } else {
+        final data = json.decode(response.body);
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Failed to cancel route',
+        };
+      }
+    } catch (e) {
+      debugPrint('💥 [CANCEL ROUTE] Exception: $e');
       return {'success': false, 'message': 'Error: $e'};
     }
   }

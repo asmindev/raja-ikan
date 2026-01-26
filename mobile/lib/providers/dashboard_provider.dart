@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/delivery_provider.dart';
+// debug print
+import 'package:flutter/foundation.dart';
 
 // Dashboard Stats State
 class DashboardStatsState {
@@ -53,14 +55,41 @@ class DashboardStatsNotifier extends StateNotifier<DashboardStatsState> {
       final orderService = _ref.read(orderServiceProvider);
       final stats = await orderService.fetchTodayStats();
 
+      debugPrint('📊 [DashboardProvider] Raw stats: $stats');
+      debugPrint(
+        '📊 [DashboardProvider] completed_count type: ${stats['completed_count'].runtimeType}',
+      );
+      debugPrint(
+        '📊 [DashboardProvider] completed_count value: ${stats['completed_count']}',
+      );
+
+      final totalEarnings = stats['total_earnings'];
+      debugPrint(
+        '📊 [DashboardProvider] total_earnings raw: $totalEarnings (${totalEarnings.runtimeType})',
+      );
+
+      final earningsDouble = totalEarnings is String
+          ? double.tryParse(totalEarnings) ?? 0.0
+          : (totalEarnings ?? 0).toDouble();
+
+      debugPrint(
+        '📊 [DashboardProvider] total_earnings converted: $earningsDouble',
+      );
+
       state = DashboardStatsState(
         completedCount: stats['completed_count'] ?? 0,
-        totalEarnings: (stats['total_earnings'] ?? 0).toDouble(),
+        totalEarnings: earningsDouble,
         pendingCount: stats['pending_count'] ?? 0,
         deliveringCount: stats['delivering_count'] ?? 0,
         isLoading: false,
       );
-    } catch (e) {
+
+      debugPrint(
+        '📊 [DashboardProvider] State updated - completedCount: ${state.completedCount}',
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ [DashboardProvider] Error: $e');
+      debugPrint('❌ [DashboardProvider] StackTrace: $stackTrace');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }

@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart' as material show Material, InkWell, RefreshIndicator;
+import 'package:flutter/material.dart'
+    as material
+    show Material, InkWell, RefreshIndicator;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -73,13 +75,29 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         .where((o) => _selectedOrderIds.contains(o.id))
         .toList();
 
-    // Create waypoints from orders
-    final waypoints = selectedOrders.map((order) {
+    // Group orders by customer (same latitude, longitude, and customer ID)
+    final Map<String, List<OrderModel>> groupedOrders = {};
+    for (var order in selectedOrders) {
+      // Create unique key based on customer location
+      final key = '${order.customerLatitude}_${order.customerLongitude}';
+      if (!groupedOrders.containsKey(key)) {
+        groupedOrders[key] = [];
+      }
+      groupedOrders[key]!.add(order);
+    }
+
+    // Create waypoints from grouped orders (1 waypoint per unique customer location)
+    final waypoints = groupedOrders.entries.map((entry) {
+      final ordersAtLocation = entry.value;
+      final firstOrder = ordersAtLocation.first;
+
       return RouteWaypoint(
-        latitude: order.customerLatitude ?? 0.0,
-        longitude: order.customerLongitude ?? 0.0,
-        orderId: order.id,
-        customerName: order.customerName,
+        latitude: firstOrder.customerLatitude ?? 0.0,
+        longitude: firstOrder.customerLongitude ?? 0.0,
+        orderId: firstOrder.id, // Use first order ID as reference
+        customerName: firstOrder.customerName,
+        // Store all order IDs at this location for reference
+        orderIds: ordersAtLocation.map((o) => o.id).toList(),
       );
     }).toList();
 
@@ -339,10 +357,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       ],
       child: IndexedStack(
         index: _selectedTab,
-        children: [
-          _buildAvailableOrders(),
-          _buildDeliveringOrders(),
-        ],
+        children: [_buildAvailableOrders(), _buildDeliveringOrders()],
       ),
     );
   }
@@ -366,9 +381,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected
-                  ? const Color(0xFF059669)
-                  : Colors.transparent,
+              color: isSelected ? const Color(0xFF059669) : Colors.transparent,
               width: 2,
             ),
           ),
@@ -565,7 +578,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
       return const EmptyState(
         icon: LucideIcons.route,
         title: 'Tidak ada rute aktif',
-        message: 'Optimalkan pesanan dari tab Tersedia untuk memulai pengiriman',
+        message:
+            'Optimalkan pesanan dari tab Tersedia untuk memulai pengiriman',
       );
     }
 
@@ -573,7 +587,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return _ActiveRouteTimeline(
       route: activeRouteState.route!,
       orders: activeRouteState.orders,
-      onRefresh: () => ref.read(activeRouteProvider.notifier).fetchActiveRoute(),
+      onRefresh: () =>
+          ref.read(activeRouteProvider.notifier).fetchActiveRoute(),
     );
   }
 }
@@ -624,7 +639,11 @@ class _ActiveRouteTimeline extends StatelessWidget {
   final List<OrderModel> orders;
   final Future<void> Function() onRefresh;
 
-  const _ActiveRouteTimeline({required this.route, required this.orders, required this.onRefresh});
+  const _ActiveRouteTimeline({
+    required this.route,
+    required this.orders,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {

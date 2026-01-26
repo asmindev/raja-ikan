@@ -439,8 +439,11 @@ class _RouteMapViewCleanState extends ConsumerState<RouteMapViewClean>
                     ],
                   ),
                 ), // Destination markers
-                ...widget.route.waypoints.skip(1).map((waypoint) {
-                  final index = widget.route.waypoints.indexOf(waypoint);
+                ...widget.route.waypoints.skip(1).toList().asMap().entries.map((
+                  entry,
+                ) {
+                  final sequence = entry.key + 1; // Start from 1
+                  final waypoint = entry.value;
                   return Marker(
                     point: LatLng(waypoint.latitude, waypoint.longitude),
                     width: 32,
@@ -453,7 +456,7 @@ class _RouteMapViewCleanState extends ConsumerState<RouteMapViewClean>
                       ),
                       child: Center(
                         child: Text(
-                          '$index',
+                          '$sequence',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
