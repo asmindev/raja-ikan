@@ -91,16 +91,27 @@ class OrderController extends Controller
     {
         $order->load(['customer', 'driver', 'orderLines.product']);
 
-        // Get available drivers for assignment
+        // Get max active orders config
+        $maxActiveOrders = config('delivery.driver.max_active_orders', 8);
+
+        // Get available drivers for assignment with their active order count
         $availableDrivers = User::where('role', 'driver')
             ->where('is_active', true)
             ->select('id', 'name', 'email', 'phone')
+            ->withCount(['deliveries as active_orders_count' => function ($query) {
+                $query->whereIn('status', ['pending', 'confirmed', 'delivering']);
+            }])
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($driver) use ($maxActiveOrders) {
+                $driver->is_available = $maxActiveOrders === 0 || $driver->active_orders_count < $maxActiveOrders;
+                return $driver;
+            });
 
         return Inertia::render('admin/orders/show/index', [
             'order' => $order,
             'availableDrivers' => $availableDrivers,
+            'maxActiveOrdersPerDriver' => $maxActiveOrders,
         ]);
     }
 
@@ -373,6 +384,20 @@ class OrderController extends Controller
                 ->where('role', 'driver')
                 ->where('is_active', true)
                 ->firstOrFail();
+
+            // Check if driver has reached max active orders limit
+            $maxActiveOrders = config('delivery.driver.max_active_orders', 8);
+            if ($maxActiveOrders > 0) {
+                $activeOrdersCount = Order::where('driver_id', $driver->id)
+                    ->whereIn('status', ['pending', 'confirmed', 'delivering'])
+                    ->count();
+
+                if ($activeOrdersCount >= $maxActiveOrders) {
+                    return back()->withErrors([
+                        'error' => "Driver {$driver->name} sudah mencapai batas maksimal {$maxActiveOrders} order aktif."
+                    ]);
+                }
+            }
 
             $order->update([
                 'driver_id' => $driver->id,

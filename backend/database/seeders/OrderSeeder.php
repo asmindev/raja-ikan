@@ -68,44 +68,68 @@ class OrderSeeder extends Seeder
             $products = Product::factory(10)->create();
         }
 
-        // Create 20 pending orders (only for customers, coordinates in Kendari)
+        // Create 20 pending orders (waiting for admin confirmation, no driver assigned)
         $pendingOrders = collect();
         foreach (range(1, 20) as $i) {
             $customer = $customers->random();
             $pendingOrders->push(
-                Order::factory()->pending()->create([
+                Order::factory()->create([
                     'customer_id' => $customer->id,
-                    'address' => $customer->address, // Pakai address dari customer
+                    'driver_id' => null, // Belum ada driver, menunggu konfirmasi admin
+                    'status' => 'pending',
+                    'address' => $customer->address,
                 ])
             );
         }
 
-        // Create 15 completed orders (only for customers, coordinates in Kendari)
+        // Create 10 confirmed orders (admin sudah konfirmasi & assign driver)
+        $confirmedOrders = collect();
+        foreach (range(1, 10) as $i) {
+            $customer = $customers->random();
+            $driver = $drivers->random();
+            $confirmedOrders->push(
+                Order::factory()->create([
+                    'customer_id' => $customer->id,
+                    'driver_id' => $driver->id, // Driver sudah di-assign oleh admin
+                    'status' => 'pending',
+                    'confirmed_at' => now(),
+                    'address' => $customer->address,
+                ])
+            );
+        }
+
+        // Create 15 completed orders (sudah selesai dikirim)
         $completedOrders = collect();
         foreach (range(1, 15) as $i) {
             $customer = $customers->random();
+            $driver = $drivers->random();
             $completedOrders->push(
                 Order::factory()->completed()->create([
                     'customer_id' => $customer->id,
-                    'address' => $customer->address, // Pakai address dari customer
+                    'driver_id' => $driver->id,
+                    'address' => $customer->address,
                 ])
             );
         }
 
-        // Create 5 cancelled orders (only for customers, coordinates in Kendari)
+        // Create 5 cancelled orders
         $cancelledOrders = collect();
         foreach (range(1, 5) as $i) {
             $customer = $customers->random();
             $cancelledOrders->push(
                 Order::factory()->cancelled()->create([
                     'customer_id' => $customer->id,
-                    'address' => $customer->address, // Pakai address dari customer
+                    'driver_id' => null,
+                    'address' => $customer->address,
                 ])
             );
         }
 
         // Combine all orders
-        $allOrders = $pendingOrders->merge($completedOrders)->merge($cancelledOrders);
+        $allOrders = $pendingOrders
+            ->merge($confirmedOrders)
+            ->merge($completedOrders)
+            ->merge($cancelledOrders);
 
         // Create order lines for each order
         foreach ($allOrders as $order) {

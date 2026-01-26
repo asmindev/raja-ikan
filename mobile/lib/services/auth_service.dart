@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/user.dart';
@@ -10,8 +11,13 @@ class AuthService {
   // Login
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      final url = '$baseUrl/login';
+      developer.log('🔐 LOGIN REQUEST', name: 'AuthService');
+      developer.log('URL: $url', name: 'AuthService');
+      developer.log('Email: $email', name: 'AuthService');
+
       final response = await http.post(
-        Uri.parse('$baseUrl/login'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -19,12 +25,26 @@ class AuthService {
         body: json.encode({'email': email, 'password': password}),
       );
 
+      developer.log('📥 LOGIN RESPONSE', name: 'AuthService');
+      developer.log('Status Code: ${response.statusCode}', name: 'AuthService');
+      developer.log('Response Body: ${response.body}', name: 'AuthService');
+
       final data = json.decode(response.body);
 
       if (response.statusCode == 200 && data['success'] == true) {
         // Save token and user data
         final token = data['data']['token'] as String;
         final user = UserModel.fromJson(data['data']['user']);
+
+        developer.log('✅ LOGIN SUCCESS', name: 'AuthService');
+        developer.log(
+          'Token: ${token.substring(0, 20)}...',
+          name: 'AuthService',
+        );
+        developer.log(
+          'User: ${user.name} (${user.email})',
+          name: 'AuthService',
+        );
 
         await TokenStorage.saveToken(token);
         await TokenStorage.saveUserData(json.encode(user.toJson()));
@@ -35,9 +55,13 @@ class AuthService {
           'user': user,
         };
       } else {
+        developer.log('❌ LOGIN FAILED', name: 'AuthService');
+        developer.log('Message: ${data['message']}', name: 'AuthService');
         return {'success': false, 'message': data['message'] ?? 'Login failed'};
       }
     } catch (e) {
+      developer.log('🔥 LOGIN ERROR', name: 'AuthService');
+      developer.log('Error: $e', name: 'AuthService');
       return {'success': false, 'message': 'Error: $e'};
     }
   }
@@ -103,22 +127,25 @@ class AuthService {
 
       // Notify server in background (fire-and-forget with timeout)
       if (token != null) {
-        http.post(
-          Uri.parse('$baseUrl/logout'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        ).timeout(
-          const Duration(seconds: 3),
-          onTimeout: () {
-            // Ignore timeout - user is already logged out locally
-            return http.Response('', 408);
-          },
-        ).catchError((_) {
-          // Ignore all errors - user is already logged out locally
-        });
+        http
+            .post(
+              Uri.parse('$baseUrl/logout'),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer $token',
+              },
+            )
+            .timeout(
+              const Duration(seconds: 3),
+              onTimeout: () {
+                // Ignore timeout - user is already logged out locally
+                return http.Response('', 408);
+              },
+            )
+            .catchError((_) {
+              // Ignore all errors - user is already logged out locally
+            });
       }
 
       return {'success': true, 'message': 'Logout successful'};

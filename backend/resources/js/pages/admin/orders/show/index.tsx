@@ -7,7 +7,7 @@ import { OrderTimeline } from './components/order-timeline';
 import { PagePropsWithOrder } from './types';
 
 export default function AdminOrderShow() {
-    const { order, availableDrivers } = usePage()
+    const { order, availableDrivers, maxActiveOrdersPerDriver } = usePage()
         .props as unknown as PagePropsWithOrder;
 
     const breadcrumbs: BreadcrumbItemType[] = [
@@ -22,6 +22,7 @@ export default function AdminOrderShow() {
                 <OrderHeader
                     order={order}
                     availableDrivers={availableDrivers}
+                    maxActiveOrdersPerDriver={maxActiveOrdersPerDriver}
                 />
                 <OrderInfoCards order={order} />
                 <div className="flex flex-col md:flex-row md:gap-4">

@@ -53,14 +53,21 @@ interface Driver {
     name: string;
     email: string;
     phone: string;
+    active_orders_count: number;
+    is_available: boolean;
 }
 
 interface OrderHeaderProps {
     order: Order;
     availableDrivers: Driver[];
+    maxActiveOrdersPerDriver: number;
 }
 
-export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
+export function OrderHeader({
+    order,
+    availableDrivers,
+    maxActiveOrdersPerDriver,
+}: OrderHeaderProps) {
     const statusConfig = getStatusConfig(order.status);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -256,6 +263,12 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                             Pilih driver yang akan menangani pesanan #{order.id}
                             . Driver akan menerima notifikasi setelah
                             ditugaskan.
+                            {maxActiveOrdersPerDriver > 0 && (
+                                <span className="mt-1 block text-xs text-amber-600">
+                                    Maksimal {maxActiveOrdersPerDriver} order
+                                    aktif per driver.
+                                </span>
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
@@ -277,6 +290,13 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                                         <div className="flex flex-col items-start">
                                             <span className="font-medium">
                                                 {selectedDriver.name}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {
+                                                    selectedDriver.active_orders_count
+                                                }
+                                                /{maxActiveOrdersPerDriver}{' '}
+                                                order aktif
                                             </span>
                                         </div>
                                     ) : (
@@ -303,11 +323,24 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                                                     key={driver.id}
                                                     value={`${driver.name} ${driver.phone} ${driver.email}`}
                                                     onSelect={() => {
-                                                        setSelectedDriverId(
-                                                            driver.id.toString(),
-                                                        );
-                                                        setComboboxOpen(false);
+                                                        if (
+                                                            driver.is_available
+                                                        ) {
+                                                            setSelectedDriverId(
+                                                                driver.id.toString(),
+                                                            );
+                                                            setComboboxOpen(
+                                                                false,
+                                                            );
+                                                        }
                                                     }}
+                                                    disabled={
+                                                        !driver.is_available
+                                                    }
+                                                    className={cn(
+                                                        !driver.is_available &&
+                                                            'cursor-not-allowed opacity-50',
+                                                    )}
                                                 >
                                                     <Check
                                                         className={cn(
@@ -318,14 +351,38 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                                                                 : 'opacity-0',
                                                         )}
                                                     />
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium">
-                                                            {driver.name}
-                                                        </span>
+                                                    <div className="flex flex-1 flex-col">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-medium">
+                                                                {driver.name}
+                                                            </span>
+                                                            <span
+                                                                className={cn(
+                                                                    'ml-2 rounded px-1.5 py-0.5 text-xs',
+                                                                    driver.is_available
+                                                                        ? 'bg-green-100 text-green-700'
+                                                                        : 'bg-red-100 text-red-700',
+                                                                )}
+                                                            >
+                                                                {
+                                                                    driver.active_orders_count
+                                                                }
+                                                                /
+                                                                {
+                                                                    maxActiveOrdersPerDriver
+                                                                }
+                                                            </span>
+                                                        </div>
                                                         <span className="text-xs text-muted-foreground">
                                                             {driver.phone} •{' '}
                                                             {driver.email}
                                                         </span>
+                                                        {!driver.is_available && (
+                                                            <span className="text-xs text-red-500">
+                                                                Sudah mencapai
+                                                                batas maksimal
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </CommandItem>
                                             ))}
@@ -342,7 +399,10 @@ export function OrderHeader({ order, availableDrivers }: OrderHeaderProps) {
                         >
                             Batal
                         </Button>
-                        <Button onClick={handleAssignDriver}>
+                        <Button
+                            onClick={handleAssignDriver}
+                            disabled={!selectedDriver?.is_available}
+                        >
                             Assign Driver
                         </Button>
                     </DialogFooter>

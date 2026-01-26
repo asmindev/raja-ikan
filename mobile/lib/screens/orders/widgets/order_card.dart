@@ -57,60 +57,22 @@ class OrderCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Order ID & Badge
+                  // Customer Name & Total
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            '#${order.id}',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      Expanded(
+                        child: Text(
+                          order.customerName ?? 'Unknown Customer',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
-                          if (isAvailable) ...[
-                            const Gap(8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: order.isMine
-                                    ? const Color(
-                                        0xFF059669,
-                                      ).withValues(alpha: 0.15)
-                                    : const Color(
-                                        0xFF3B82F6,
-                                      ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: order.isMine
-                                      ? const Color(
-                                          0xFF059669,
-                                        ).withValues(alpha: 0.3)
-                                      : const Color(
-                                          0xFF3B82F6,
-                                        ).withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                order.isMine ? 'Assigned' : 'Available',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: order.isMine
-                                      ? const Color(0xFF059669)
-                                      : const Color(0xFF3B82F6),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                        ),
                       ),
+                      const Gap(8),
                       Text(
                         currencyFormat.format(order.total),
                         style: const TextStyle(

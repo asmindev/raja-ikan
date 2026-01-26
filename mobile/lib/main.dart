@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:mobile/navigation/main_navigation.dart';
 import 'package:mobile/providers/auth_provider.dart';
 import 'package:mobile/screens/auth/login_page.dart';
 import 'package:mobile/services/http_interceptor.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   runApp(const ProviderScope(child: MainApp()));
 }
 

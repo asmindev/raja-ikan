@@ -48,9 +48,12 @@ export interface AvailableDriver {
     name: string;
     email: string;
     phone: string;
+    active_orders_count: number;
+    is_available: boolean;
 }
 
 export interface PagePropsWithOrder {
     order: Order;
     availableDrivers: AvailableDriver[];
+    maxActiveOrdersPerDriver: number;
 }

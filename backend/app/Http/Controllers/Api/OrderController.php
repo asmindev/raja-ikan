@@ -25,29 +25,8 @@ class OrderController extends Controller
             ])
             ->select(['id', 'status', 'total', 'customer_id', 'driver_id', 'address', 'estimated', 'delivery_at', 'created_at'])
             ->when($status && $status !== 'all', function ($q) use ($status, $user) {
-                // For drivers requesting 'pending' orders (Available tab)
-                // Show BOTH assigned to this driver + unassigned orders
-                if ($user && $user->role === 'driver' && $status === 'pending') {
-                    $q->where('status', 'pending')
-                        ->where(function ($sub) use ($user) {
-                            $sub->whereNull('driver_id')           // Unassigned orders
-                                ->orWhere('driver_id', $user->id); // OR assigned to me
-                        });
-                }
-                // For drivers requesting 'delivering' orders (In Progress tab)
-                // Show orders being delivered by this driver
-                elseif ($user && $user->role === 'driver' && $status === 'delivering') {
-                    $q->where('status', 'delivering')
-                        ->where('driver_id', $user->id);
-                }
-                // For drivers requesting 'completed' orders (Completed tab)
-                // Show completed orders by this driver
-                elseif ($user && $user->role === 'driver' && $status === 'completed') {
-                    $q->where('status', 'completed')
-                        ->where('driver_id', $user->id);
-                }
-                // For admins or other roles
-                elseif ($user && $user->role === 'driver') {
+                // For drivers - only show orders assigned to them
+                if ($user && $user->role === 'driver') {
                     $q->where('status', $status)
                         ->where('driver_id', $user->id);
                 }

@@ -12,9 +12,10 @@ class ApiConfig {
     if (kIsWeb) return 'http://localhost:8000';
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        // change to ngrok url if wireless android is enabled
-        return 'https://rajaikan.zettdev.my.id';
-        // return 'http://10.0.2.2:8000'; // Android emulator to host
+        // Untuk HP fisik via USB, gunakan IP komputer di jaringan lokal
+        // Untuk emulator, gunakan 10.0.2.2
+        return 'http://192.168.1.4:8000'; // IP komputer untuk device fisik
+      // return 'http://10.0.2.2:8000'; // Uncomment ini untuk Android emulator
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
       case TargetPlatform.windows:

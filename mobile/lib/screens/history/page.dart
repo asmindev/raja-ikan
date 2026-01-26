@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart' as material show Material, InkWell, RefreshIndicator;
+import 'package:flutter/material.dart'
+    as material
+    show Material, InkWell, RefreshIndicator;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -35,8 +37,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           if (order.deliveryAt == null) return false;
           final deliveryDate = order.deliveryAt!;
           return deliveryDate.year == now.year &&
-                 deliveryDate.month == now.month &&
-                 deliveryDate.day == now.day;
+              deliveryDate.month == now.month &&
+              deliveryDate.day == now.day;
         }).toList();
 
       case 'week':
@@ -51,7 +53,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           if (order.deliveryAt == null) return false;
           final deliveryDate = order.deliveryAt!;
           return deliveryDate.year == now.year &&
-                 deliveryDate.month == now.month;
+              deliveryDate.month == now.month;
         }).toList();
 
       default: // 'all'
@@ -188,7 +190,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             return ErrorState(
               error: orderState.error!,
               onRetry: () {
-                ref.read(completedOrdersProvider.notifier).fetchOrders(refresh: true);
+                ref
+                    .read(completedOrdersProvider.notifier)
+                    .fetchOrders(refresh: true);
               },
             );
           }
@@ -213,7 +217,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
           return material.RefreshIndicator(
             onRefresh: () async {
-              await ref.read(completedOrdersProvider.notifier).fetchOrders(refresh: true);
+              await ref
+                  .read(completedOrdersProvider.notifier)
+                  .fetchOrders(refresh: true);
             },
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
@@ -225,7 +231,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   order: order,
                   status: 'Terkirim',
                   completedAt: order.deliveryAt != null
-                      ? DateFormat('dd MMM, HH:mm', 'id_ID').format(order.deliveryAt!)
+                      ? DateFormat('dd MMM, HH:mm').format(order.deliveryAt!)
                       : null,
                 );
               },
