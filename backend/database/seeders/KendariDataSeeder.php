@@ -2,12 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Product;
 
-class UserSeeder extends Seeder
+class KendariDataSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -18,7 +19,95 @@ class UserSeeder extends Seeder
         // Kendari City Center: -3.9778, 122.5150
         // Area coverage: roughly -3.95 to -4.00 lat, 122.50 to 122.55 lon
 
-        // 1. Create Drivers - 5 drivers di area Kendari
+        // 1. Create Products - Ikan Laut Kendari
+        $products = [
+            [
+                'name' => 'Ikan Tuna Segar',
+                'description' => 'Ikan tuna hasil tangkapan nelayan Kendari, segar dan berkualitas tinggi. Cocok untuk sashimi atau dimasak.',
+                'category' => 'Ikan Laut',
+                'price' => 85000,
+                'stock' => 50,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ikan Cakalang',
+                'description' => 'Ikan cakalang segar dari Teluk Kendari. Daging tebal, cocok untuk ikan bakar atau rica-rica.',
+                'category' => 'Ikan Laut',
+                'price' => 45000,
+                'stock' => 80,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ikan Kerapu Sunu',
+                'description' => 'Ikan kerapu sunu dari perairan Sulawesi Tenggara. Daging lembut, cocok untuk sup atau tim.',
+                'category' => 'Ikan Laut',
+                'price' => 120000,
+                'stock' => 30,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ikan Kakap Merah',
+                'description' => 'Ikan kakap merah segar dari laut Kendari. Daging putih bersih, enak untuk digoreng atau dikukus.',
+                'category' => 'Ikan Laut',
+                'price' => 95000,
+                'stock' => 40,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ikan Baronang',
+                'description' => 'Ikan baronang khas Sulawesi Tenggara. Daging gurih, cocok untuk ikan bakar atau kuah asam.',
+                'category' => 'Ikan Laut',
+                'price' => 38000,
+                'stock' => 70,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Cumi-Cumi Segar',
+                'description' => 'Cumi-cumi segar dari Teluk Kendari. Tekstur kenyal, cocok untuk tumis atau bakar.',
+                'category' => 'Seafood',
+                'price' => 65000,
+                'stock' => 60,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Udang Windu',
+                'description' => 'Udang windu segar dari tambak Kendari. Ukuran besar, daging tebal dan manis.',
+                'category' => 'Seafood',
+                'price' => 110000,
+                'stock' => 45,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Kepiting Rajungan',
+                'description' => 'Kepiting rajungan segar dari perairan Kendari. Daging manis dan melimpah.',
+                'category' => 'Seafood',
+                'price' => 75000,
+                'stock' => 35,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ikan Tongkol',
+                'description' => 'Ikan tongkol segar, cocok untuk pepes atau rica-rica. Harga ekonomis.',
+                'category' => 'Ikan Laut',
+                'price' => 32000,
+                'stock' => 100,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Ikan Kuwe',
+                'description' => 'Ikan kuwe atau Giant Trevally dari laut Kendari. Daging tebal dan gurih.',
+                'category' => 'Ikan Laut',
+                'price' => 78000,
+                'stock' => 25,
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($products as $product) {
+            Product::create($product);
+        }
+
+        // 2. Create Drivers - 5 drivers di area Kendari
         $drivers = [
             [
                 'name' => 'Ahmad Rizki',
@@ -81,7 +170,7 @@ class UserSeeder extends Seeder
             User::create($driver);
         }
 
-        // 2. Create Customers - 10 customers di area Kendari
+        // 3. Create Customers - 10 customers di area Kendari
         $customers = [
             [
                 'name' => 'Andi Wijaya',
@@ -198,5 +287,11 @@ class UserSeeder extends Seeder
         foreach ($customers as $customer) {
             User::create($customer);
         }
+
+        $this->command->info('✅ Kendari data seeded successfully!');
+        $this->command->info('   - 10 Produk Ikan Laut');
+        $this->command->info('   - 5 Drivers');
+        $this->command->info('   - 10 Customers');
+        $this->command->info('   - All users password: password');
     }
 }
