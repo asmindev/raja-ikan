@@ -20,7 +20,7 @@ export function createQRRoutes(waService: WhatsAppService) {
                     message:
                         "No QR code available. WhatsApp might be already connected.",
                 },
-                404
+                404,
             );
         }
 
@@ -46,7 +46,7 @@ export function createQRRoutes(waService: WhatsAppService) {
                         message:
                             "WhatsApp is already connected. Please logout first.",
                     },
-                    400
+                    400,
                 );
             }
 
@@ -68,7 +68,29 @@ export function createQRRoutes(waService: WhatsAppService) {
                     success: false,
                     message: error.message || "Failed to generate QR code",
                 },
-                500
+                500,
+            );
+        }
+    });
+
+    /**
+     * Clear session data
+     */
+    qrRoutes.delete("/api/qr/session", async (c) => {
+        try {
+            await waService.clearSession();
+            return c.json({
+                success: true,
+                message: "Session cleared successfully",
+            });
+        } catch (error: any) {
+            logger.error("Failed to clear session:", error);
+            return c.json(
+                {
+                    success: false,
+                    message: error.message || "Failed to clear session",
+                },
+                500,
             );
         }
     });

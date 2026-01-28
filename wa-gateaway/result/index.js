@@ -7,8 +7,10 @@ import { createServer } from "http";
 // src/whatsapp/WhatsAppService.ts
 import makeWASocket, {
   DisconnectReason,
+  fetchLatestBaileysVersion,
   useMultiFileAuthState
-} from "baileys";
+} from "atexovi-baileys";
+import fs2 from "fs";
 import QRCode from "qrcode";
 
 // src/core/logger/Logger.ts
@@ -183,6 +185,406 @@ var baileysLogger = {
   child: () => baileysLogger
 };
 
+// src/whatsapp/WhatsAppService.ts
+class WhatsAppService {
+  logger;
+  socket = null;
+  isConnected = false;
+  userInfo;
+  currentQRCode = null;
+  qrCodeCallback;
+  connectionUpdateCallback;
+  constructor() {
+    this.logger = new Logger("WhatsAppService");
+  }
+  onQRCode(callback) {
+    this.qrCodeCallback = callback;
+  }
+  onConnectionUpdate(callback) {
+    this.connectionUpdateCallback = callback;
+  }
+  getStatus() {
+    return {
+      connected: this.isConnected,
+      user: this.userInfo,
+      qrCode: this.currentQRCode || undefined
+    };
+  }
+  getQRCode() {
+    return this.currentQRCode;
+  }
+  async sendMessage(to, text) {
+    if (!this.socket) {
+      throw new Error("WhatsApp service is not initialized");
+    }
+    if (!this.isConnected) {
+      const connected = await this.waitForConnection();
+      if (!connected) {
+        throw new Error("WhatsApp is not connected (timeout waiting for connection)");
+      }
+    }
+    const jid = this.formatJID(to);
+    await this.socket.sendMessage(jid, { text });
+    this.logger.info(`✅ Message sent to ${to}`);
+  }
+  async logout() {
+    if (this.socket) {
+      await this.socket.logout();
+    }
+    this.resetState();
+    this.logger.info("\uD83D\uDC4B Logged out from WhatsApp");
+  }
+  async restart() {
+    this.logger.info("\uD83D\uDD04 Restarting WhatsApp connection...");
+    await this.closeSocket();
+    this.resetState();
+    await this.initialize();
+  }
+  async clearSession() {
+    this.logger.info("\uD83E\uDDF9 Clearing session data...");
+    await this.closeSocket();
+    this.resetState();
+    try {
+      if (fs2.existsSync(CONFIG.SESSION_PATH)) {
+        await fs2.promises.rm(CONFIG.SESSION_PATH, {
+          recursive: true,
+          force: true
+        });
+        this.logger.info("✅ Session directory removed");
+      }
+    } catch (error) {
+      this.logger.error("❌ Failed to clear session:", error);
+      throw error;
+    }
+  }
+  async initialize() {
+    try {
+      this.logger.info("\uD83D\uDE80 Initializing WhatsApp...");
+      const { state, saveCreds } = await useMultiFileAuthState(CONFIG.SESSION_PATH);
+      const { version, isLatest } = await fetchLatestBaileysVersion();
+      this.logger.info(`Using WA version v${version.join(".")} (isLatest: ${isLatest})`);
+      this.socket = makeWASocket({
+        version,
+        auth: state,
+        logger: baileysLogger,
+        printQRInTerminal: false,
+        syncFullHistory: false,
+        browser: ["Kapal Trip", "Chrome", "120.0.6099.109"],
+        generateHighQualityLinkPreview: true
+      });
+      this.socket.ev.on("creds.update", saveCreds);
+      this.setupEventHandlers();
+      this.logger.info("✅ WhatsApp initialized");
+    } catch (error) {
+      this.logger.error("❌ Initialization failed:", error);
+      throw error;
+    }
+  }
+  setupEventHandlers() {
+    if (!this.socket)
+      return;
+    this.setupConnectionEvents();
+    this.setupMessageEvents();
+  }
+  setupConnectionEvents() {
+    if (!this.socket)
+      return;
+    this.socket.ev.on("connection.update", async (update) => {
+      const { connection, lastDisconnect, qr } = update;
+      if (qr)
+        await this.onQR(qr);
+      if (connection === "close")
+        await this.onDisconnect(lastDisconnect);
+      if (connection === "open")
+        await this.onConnect();
+    });
+  }
+  async onQR(qrRaw) {
+    try {
+      this.logger.info("\uD83D\uDCF1 QR code generated");
+      const qrDataURL = await QRCode.toDataURL(qrRaw);
+      this.currentQRCode = qrDataURL;
+      this.qrCodeCallback?.(qrDataURL);
+      this.connectionUpdateCallback?.({
+        connected: false,
+        qrCode: qrDataURL
+      });
+    } catch (error) {
+      this.logger.error("QR generation failed:", error);
+    }
+  }
+  async onDisconnect(lastDisconnect) {
+    const statusCode = lastDisconnect?.error?.output?.statusCode;
+    const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+    this.logger.error("❌ Disconnected details:", {
+      error: lastDisconnect?.error,
+      statusCode,
+      reason: lastDisconnect?.error?.message,
+      stack: lastDisconnect?.error?.stack
+    });
+    this.logger.warn(`❌ Disconnected (reconnect: ${shouldReconnect})`);
+    this.isConnected = false;
+    this.userInfo = undefined;
+    this.connectionUpdateCallback?.({ connected: false });
+    if (shouldReconnect) {
+      this.logger.info("\uD83D\uDD04 Reconnecting in 3s...");
+      setTimeout(() => this.initialize(), 3000);
+    }
+  }
+  async onConnect() {
+    this.logger.info("✅ Connected!");
+    this.isConnected = true;
+    this.currentQRCode = null;
+    if (this.socket?.user) {
+      this.userInfo = {
+        id: this.socket.user.id,
+        name: this.socket.user.name || "Unknown"
+      };
+      this.logger.info(`\uD83D\uDC64 Logged in as: ${this.userInfo.name}`);
+      this.connectionUpdateCallback?.({
+        connected: true,
+        user: this.userInfo
+      });
+      this.qrCodeCallback?.("");
+    }
+  }
+  setupMessageEvents() {
+    if (!this.socket)
+      return;
+    this.socket.ev.on("messages.upsert", async ({ messages, type }) => {
+      if (type !== "notify")
+        return;
+    });
+  }
+  formatJID(phone) {
+    if (phone.includes("@s.whatsapp.net")) {
+      return phone;
+    }
+    const cleaned = phone.replace(/[^\d+]/g, "").replace(/^\+/, "");
+    return `${cleaned}@s.whatsapp.net`;
+  }
+  async closeSocket() {
+    if (!this.socket)
+      return;
+    try {
+      this.socket.end(undefined);
+      this.logger.info("\uD83D\uDD0C Socket closed");
+    } catch (error) {
+      this.logger.error("Socket close error:", error);
+    }
+    this.socket = null;
+  }
+  resetState() {
+    this.isConnected = false;
+    this.currentQRCode = null;
+    this.userInfo = undefined;
+    this.socket = null;
+  }
+  async waitForConnection(timeoutMs = 5000) {
+    if (this.isConnected)
+      return true;
+    this.logger.info(`⏳ Waiting for connection (timeout: ${timeoutMs}ms)...`);
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (this.isConnected)
+        return true;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    return false;
+  }
+}
+// src/services/WebSocketService.ts
+import { Server as SocketIOServer } from "socket.io";
+class WebSocketService {
+  io;
+  logger;
+  constructor(httpServer) {
+    this.logger = new Logger("WebSocketService");
+    this.io = new SocketIOServer(httpServer, {
+      cors: {
+        origin: "*",
+        credentials: true
+      },
+      transports: ["websocket", "polling"]
+    });
+    this.setupEventHandlers();
+  }
+  setupEventHandlers() {
+    this.io.on("connection", (socket) => {
+      this.logger.info(`\uD83D\uDD0C Client connected: ${socket.id}`);
+      socket.on("disconnect", () => {
+        this.logger.info(`❌ Client disconnected: ${socket.id}`);
+      });
+      socket.on("ping", () => {
+        socket.emit("pong");
+      });
+    });
+  }
+  emitQRCode(qrCode) {
+    this.logger.info("\uD83D\uDCF1 Broadcasting QR code to all clients");
+    this.io.emit("qr:generated", {
+      qrCode,
+      timestamp: new Date().toISOString()
+    });
+  }
+  emitConnectionStatus(status) {
+    this.logger.info(`\uD83D\uDD04 Broadcasting connection status: ${status.status}`);
+    this.io.emit("connection:status", {
+      ...status,
+      timestamp: new Date().toISOString()
+    });
+  }
+  emitWhatsAppConnected(user) {
+    this.logger.info(`✅ Broadcasting WhatsApp connected: ${user.name}`);
+    this.io.emit("whatsapp:connected", { user });
+  }
+  emitWhatsAppDisconnected() {
+    this.logger.warn("\uD83D\uDCF4 Broadcasting WhatsApp disconnected");
+    this.io.emit("whatsapp:disconnected", {});
+  }
+  emitMessageReceived(data) {
+    this.logger.info(`\uD83D\uDCE8 Broadcasting incoming message from: ${data.from}`);
+    this.io.emit("message:received", {
+      ...data,
+      timestamp: new Date().toISOString()
+    });
+  }
+  emitMessageSent(data) {
+    this.logger.info(`\uD83D\uDCE4 Broadcasting message sent status: ${data.success}`);
+    this.io.emit("message:sent", {
+      ...data,
+      timestamp: new Date().toISOString()
+    });
+  }
+  getIO() {
+    return this.io;
+  }
+}
+
+// src/routes/health.routes.ts
+import { Hono } from "hono";
+var healthRoutes = new Hono;
+healthRoutes.get("/health", (c) => {
+  return c.json({
+    status: "ok",
+    timestamp: new Date().toISOString()
+  });
+});
+var health_routes_default = healthRoutes;
+
+// src/routes/status.routes.ts
+import { Hono as Hono2 } from "hono";
+function createStatusRoutes(waService) {
+  const statusRoutes = new Hono2;
+  statusRoutes.get("/status", (c) => {
+    const status = waService.getStatus();
+    return c.json({
+      status: {
+        connected: status.connected,
+        user: status.user,
+        hasQRCode: !!status.qrCode
+      },
+      timestamp: new Date().toISOString()
+    });
+  });
+  return statusRoutes;
+}
+
+// src/routes/qr.routes.ts
+import { Hono as Hono3 } from "hono";
+var logger = new Logger("QRRoutes");
+function createQRRoutes(waService) {
+  const qrRoutes = new Hono3;
+  qrRoutes.get("/api/qr", (c) => {
+    const qrCode = waService.getQRCode();
+    if (!qrCode) {
+      return c.json({
+        success: false,
+        message: "No QR code available. WhatsApp might be already connected."
+      }, 404);
+    }
+    return c.json({
+      success: true,
+      qrCode,
+      timestamp: new Date().toISOString()
+    });
+  });
+  qrRoutes.post("/api/qr/generate", async (c) => {
+    try {
+      const status = waService.getStatus();
+      if (status.connected) {
+        return c.json({
+          success: false,
+          message: "WhatsApp is already connected. Please logout first."
+        }, 400);
+      }
+      logger.info("\uD83D\uDCF1 Generating new QR code...");
+      await waService.restart();
+      return c.json({
+        success: true,
+        message: "QR code generation initiated. Please wait for the QR code.",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error("Failed to generate QR code:", error);
+      return c.json({
+        success: false,
+        message: error.message || "Failed to generate QR code"
+      }, 500);
+    }
+  });
+  qrRoutes.delete("/api/qr/session", async (c) => {
+    try {
+      await waService.clearSession();
+      return c.json({
+        success: true,
+        message: "Session cleared successfully"
+      });
+    } catch (error) {
+      logger.error("Failed to clear session:", error);
+      return c.json({
+        success: false,
+        message: error.message || "Failed to clear session"
+      }, 500);
+    }
+  });
+  return qrRoutes;
+}
+
+// src/routes/message.routes.ts
+import { Hono as Hono4 } from "hono";
+
+// src/services/ChatHistoryService.ts
+var logger2 = new Logger("ChatHistoryService");
+
+class ChatHistoryService {
+  async getChatHistory(phone, limit = 20) {
+    logger2.warn("ChatHistoryService.getChatHistory: Mongoose removed, returning empty array");
+    return [];
+  }
+  async addMessage(phone, role, content, type = "text", source = "ai") {
+    logger2.warn("ChatHistoryService.addMessage: Mongoose removed, message not saved");
+  }
+  async clearHistory(phone) {
+    logger2.warn("ChatHistoryService.clearHistory: Mongoose removed, history not cleared");
+  }
+  async deleteChat(phone) {
+    logger2.warn("ChatHistoryService.deleteChat: Mongoose removed, chat not deleted");
+  }
+  async getActiveChats() {
+    logger2.warn("ChatHistoryService.getActiveChats: Mongoose removed, returning empty array");
+    return [];
+  }
+  async addAdminReply(phone, content) {
+    logger2.warn("ChatHistoryService.addAdminReply: Mongoose removed, admin reply not saved");
+  }
+  async getChatStats(phone) {
+    logger2.warn("ChatHistoryService.getChatStats: Mongoose removed, returning null");
+    return null;
+  }
+}
+var chatHistoryService = new ChatHistoryService;
+
 // src/ai/AIAssistant.ts
 import { Type } from "@google/genai";
 
@@ -259,11 +661,11 @@ var getProductsFunction = {
 };
 
 // src/ai/functions/parseOrderIntent.ts
-var logger = new Logger("ExtractOrderItems");
+var logger3 = new Logger("ExtractOrderItems");
 var geminiClient = null;
 function setGeminiClient(client) {
   geminiClient = client;
-  logger.info("GeminiClient injected into extract_order_items function");
+  logger3.info("GeminiClient injected into extract_order_items function");
 }
 
 // src/ai/functions/index.ts
@@ -273,37 +675,6 @@ var availableFunctions = {
 function initializeFunctions(geminiClient2) {
   setGeminiClient(geminiClient2);
 }
-
-// src/services/ChatHistoryService.ts
-var logger2 = new Logger("ChatHistoryService");
-
-class ChatHistoryService {
-  async getChatHistory(phone, limit = 20) {
-    logger2.warn("ChatHistoryService.getChatHistory: Mongoose removed, returning empty array");
-    return [];
-  }
-  async addMessage(phone, role, content, type = "text", source = "ai") {
-    logger2.warn("ChatHistoryService.addMessage: Mongoose removed, message not saved");
-  }
-  async clearHistory(phone) {
-    logger2.warn("ChatHistoryService.clearHistory: Mongoose removed, history not cleared");
-  }
-  async deleteChat(phone) {
-    logger2.warn("ChatHistoryService.deleteChat: Mongoose removed, chat not deleted");
-  }
-  async getActiveChats() {
-    logger2.warn("ChatHistoryService.getActiveChats: Mongoose removed, returning empty array");
-    return [];
-  }
-  async addAdminReply(phone, content) {
-    logger2.warn("ChatHistoryService.addAdminReply: Mongoose removed, admin reply not saved");
-  }
-  async getChatStats(phone) {
-    logger2.warn("ChatHistoryService.getChatStats: Mongoose removed, returning null");
-    return null;
-  }
-}
-var chatHistoryService = new ChatHistoryService;
 
 // src/ai/AIAssistant.ts
 class AIAssistant {
@@ -629,7 +1000,7 @@ class Order {
 }
 
 // src/domain/order/services/OrderService.ts
-var logger3 = new Logger("OrderService");
+var logger4 = new Logger("OrderService");
 
 class OrderService {
   orderRepository;
@@ -637,10 +1008,10 @@ class OrderService {
     this.orderRepository = orderRepository;
   }
   async createPendingOrder(customerPhone, items) {
-    logger3.info(`Creating pending order for ${customerPhone}`);
+    logger4.info(`Creating pending order for ${customerPhone}`);
     const existingPending = await this.orderRepository.findPendingByCustomerPhone(customerPhone);
     if (existingPending) {
-      logger3.info(`Found existing pending order for ${customerPhone}, replacing it`);
+      logger4.info(`Found existing pending order for ${customerPhone}, replacing it`);
       await this.orderRepository.delete(existingPending.id);
     }
     const order = new Order({
@@ -649,29 +1020,29 @@ class OrderService {
       status: "pending" /* PENDING */
     });
     const savedOrder = await this.orderRepository.save(order);
-    logger3.info(`Pending order created: ${savedOrder.id}`);
+    logger4.info(`Pending order created: ${savedOrder.id}`);
     return savedOrder;
   }
   async confirmOrder(customerPhone) {
-    logger3.info(`Confirming order for ${customerPhone}`);
+    logger4.info(`Confirming order for ${customerPhone}`);
     const pendingOrder = await this.orderRepository.findPendingByCustomerPhone(customerPhone);
     if (!pendingOrder) {
       throw new Error("No pending order found for this customer");
     }
     pendingOrder.confirm();
     const confirmedOrder = await this.orderRepository.save(pendingOrder);
-    logger3.info(`Order confirmed: ${confirmedOrder.id}`);
+    logger4.info(`Order confirmed: ${confirmedOrder.id}`);
     return confirmedOrder;
   }
   async cancelOrder(customerPhone) {
-    logger3.info(`Cancelling order for ${customerPhone}`);
+    logger4.info(`Cancelling order for ${customerPhone}`);
     const pendingOrder = await this.orderRepository.findPendingByCustomerPhone(customerPhone);
     if (!pendingOrder) {
       throw new Error("No pending order found for this customer");
     }
     pendingOrder.cancel();
     const cancelledOrder = await this.orderRepository.save(pendingOrder);
-    logger3.info(`Order cancelled: ${cancelledOrder.id}`);
+    logger4.info(`Order cancelled: ${cancelledOrder.id}`);
     return cancelledOrder;
   }
   async getPendingOrder(customerPhone) {
@@ -692,7 +1063,7 @@ Apakah pesanan ini sudah benar?`;
 }
 
 // src/infrastructure/database/repositories/OrderRepository.ts
-var logger4 = new Logger("OrderRepository");
+var logger5 = new Logger("OrderRepository");
 
 class OrderRepository {
 }
@@ -715,9 +1086,9 @@ class MessageHandler {
 }
 
 // src/whatsapp/helpers.ts
-import { proto } from "atexovi-baileys";
+import { proto as proto2 } from "atexovi-baileys";
 async function sendInteractiveButtons(sock, to, text, buttons, options) {
-  const nativeButtons = buttons.map((btn) => proto.Message.InteractiveMessage.NativeFlowMessage.NativeFlowButton.create({
+  const nativeButtons = buttons.map((btn) => proto2.Message.InteractiveMessage.NativeFlowMessage.NativeFlowButton.create({
     name: "quick_reply",
     buttonParamsJson: JSON.stringify({
       display_text: btn.displayText,
@@ -965,7 +1336,7 @@ class MediaMessageHandler extends MessageHandler {
 }
 
 // src/infrastructure/whatsapp/message-handlers/MessageHandlerFactory.ts
-var logger5 = new Logger("MessageHandlerFactory");
+var logger6 = new Logger("MessageHandlerFactory");
 
 class MessageHandlerFactory {
   aiAssistant;
@@ -986,14 +1357,14 @@ class MessageHandlerFactory {
   async processMessage(sock, message) {
     const messageType = Object.keys(message.message || {})[0];
     if (!messageType) {
-      logger5.warn("Message has no type");
+      logger6.warn("Message has no type");
       return;
     }
     const handler = this.handlers.find((h) => h.canHandle(messageType));
     if (handler) {
       await handler.handle(sock, message);
     } else {
-      logger5.info(`No handler for message type: ${messageType}`);
+      logger6.info(`No handler for message type: ${messageType}`);
     }
   }
   async processMessages(sock, messages) {
@@ -1003,7 +1374,7 @@ class MessageHandlerFactory {
           continue;
         await this.processMessage(sock, message);
       } catch (error) {
-        logger5.error("Error processing message:", error);
+        logger6.error("Error processing message:", error);
       }
     }
   }
@@ -1492,347 +1863,8 @@ class Container {
 }
 var getContainer = () => Container.getInstance();
 
-// src/whatsapp/messages/index.ts
-var logger6 = new Logger("MessageHandler");
-async function messageHandlers(sock, messages) {
-  try {
-    const container = getContainer();
-    const messageHandlerFactory = container.getMessageHandlerFactory();
-    logger6.info(`\uD83D\uDCE8 Processing ${messages.length} message(s)`);
-    await messageHandlerFactory.processMessages(sock, messages);
-    logger6.info(`✅ All messages processed`);
-  } catch (error) {
-    logger6.error("Error in message handler:", error);
-  }
-}
-
-// src/whatsapp/WhatsAppService.ts
-class WhatsAppService {
-  logger;
-  socket = null;
-  isConnected = false;
-  userInfo;
-  currentQRCode = null;
-  qrCodeCallback;
-  connectionUpdateCallback;
-  constructor() {
-    this.logger = new Logger("WhatsAppService");
-  }
-  onQRCode(callback) {
-    this.qrCodeCallback = callback;
-  }
-  onConnectionUpdate(callback) {
-    this.connectionUpdateCallback = callback;
-  }
-  getStatus() {
-    return {
-      connected: this.isConnected,
-      user: this.userInfo,
-      qrCode: this.currentQRCode || undefined
-    };
-  }
-  getQRCode() {
-    return this.currentQRCode;
-  }
-  async sendMessage(to, text) {
-    if (!this.socket) {
-      throw new Error("WhatsApp service is not initialized");
-    }
-    if (!this.isConnected) {
-      const connected = await this.waitForConnection();
-      if (!connected) {
-        throw new Error("WhatsApp is not connected (timeout waiting for connection)");
-      }
-    }
-    const jid = this.formatJID(to);
-    await this.socket.sendMessage(jid, { text });
-    this.logger.info(`✅ Message sent to ${to}`);
-  }
-  async logout() {
-    if (this.socket) {
-      await this.socket.logout();
-    }
-    this.resetState();
-    this.logger.info("\uD83D\uDC4B Logged out from WhatsApp");
-  }
-  async restart() {
-    this.logger.info("\uD83D\uDD04 Restarting WhatsApp connection...");
-    await this.closeSocket();
-    this.resetState();
-    await this.initialize();
-  }
-  async initialize() {
-    try {
-      this.logger.info("\uD83D\uDE80 Initializing WhatsApp...");
-      const { state, saveCreds } = await useMultiFileAuthState(CONFIG.SESSION_PATH);
-      this.socket = makeWASocket({
-        auth: state,
-        logger: baileysLogger,
-        printQRInTerminal: false,
-        syncFullHistory: false
-      });
-      this.socket.ev.on("creds.update", saveCreds);
-      this.setupEventHandlers();
-      this.logger.info("✅ WhatsApp initialized");
-    } catch (error) {
-      this.logger.error("❌ Initialization failed:", error);
-      throw error;
-    }
-  }
-  setupEventHandlers() {
-    if (!this.socket)
-      return;
-    this.setupConnectionEvents();
-    this.setupMessageEvents();
-  }
-  setupConnectionEvents() {
-    if (!this.socket)
-      return;
-    this.socket.ev.on("connection.update", async (update) => {
-      const { connection, lastDisconnect, qr } = update;
-      if (qr)
-        await this.onQR(qr);
-      if (connection === "close")
-        await this.onDisconnect(lastDisconnect);
-      if (connection === "open")
-        await this.onConnect();
-    });
-  }
-  async onQR(qrRaw) {
-    try {
-      this.logger.info("\uD83D\uDCF1 QR code generated");
-      const qrDataURL = await QRCode.toDataURL(qrRaw);
-      this.currentQRCode = qrDataURL;
-      this.qrCodeCallback?.(qrDataURL);
-      this.connectionUpdateCallback?.({
-        connected: false,
-        qrCode: qrDataURL
-      });
-    } catch (error) {
-      this.logger.error("QR generation failed:", error);
-    }
-  }
-  async onDisconnect(lastDisconnect) {
-    const statusCode = lastDisconnect?.error?.output?.statusCode;
-    const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-    this.logger.warn(`❌ Disconnected (reconnect: ${shouldReconnect})`);
-    this.isConnected = false;
-    this.userInfo = undefined;
-    this.connectionUpdateCallback?.({ connected: false });
-    if (shouldReconnect) {
-      this.logger.info("\uD83D\uDD04 Reconnecting in 3s...");
-      setTimeout(() => this.initialize(), 3000);
-    }
-  }
-  async onConnect() {
-    this.logger.info("✅ Connected!");
-    this.isConnected = true;
-    this.currentQRCode = null;
-    if (this.socket?.user) {
-      this.userInfo = {
-        id: this.socket.user.id,
-        name: this.socket.user.name || "Unknown"
-      };
-      this.logger.info(`\uD83D\uDC64 Logged in as: ${this.userInfo.name}`);
-      this.connectionUpdateCallback?.({
-        connected: true,
-        user: this.userInfo
-      });
-      this.qrCodeCallback?.("");
-    }
-  }
-  setupMessageEvents() {
-    if (!this.socket)
-      return;
-    this.socket.ev.on("messages.upsert", async ({ messages, type }) => {
-      if (type !== "notify")
-        return;
-      messageHandlers(this.socket, messages);
-    });
-  }
-  formatJID(phone) {
-    if (phone.includes("@s.whatsapp.net")) {
-      return phone;
-    }
-    const cleaned = phone.replace(/[^\d+]/g, "").replace(/^\+/, "");
-    return `${cleaned}@s.whatsapp.net`;
-  }
-  async closeSocket() {
-    if (!this.socket)
-      return;
-    try {
-      this.socket.end(undefined);
-      this.logger.info("\uD83D\uDD0C Socket closed");
-    } catch (error) {
-      this.logger.error("Socket close error:", error);
-    }
-    this.socket = null;
-  }
-  resetState() {
-    this.isConnected = false;
-    this.currentQRCode = null;
-    this.userInfo = undefined;
-    this.socket = null;
-  }
-  async waitForConnection(timeoutMs = 5000) {
-    if (this.isConnected)
-      return true;
-    this.logger.info(`⏳ Waiting for connection (timeout: ${timeoutMs}ms)...`);
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-      if (this.isConnected)
-        return true;
-      await new Promise((resolve) => setTimeout(resolve, 200));
-    }
-    return false;
-  }
-}
-// src/services/WebSocketService.ts
-import { Server as SocketIOServer } from "socket.io";
-class WebSocketService {
-  io;
-  logger;
-  constructor(httpServer) {
-    this.logger = new Logger("WebSocketService");
-    this.io = new SocketIOServer(httpServer, {
-      cors: {
-        origin: "*",
-        credentials: true
-      },
-      transports: ["websocket", "polling"]
-    });
-    this.setupEventHandlers();
-  }
-  setupEventHandlers() {
-    this.io.on("connection", (socket) => {
-      this.logger.info(`\uD83D\uDD0C Client connected: ${socket.id}`);
-      socket.on("disconnect", () => {
-        this.logger.info(`❌ Client disconnected: ${socket.id}`);
-      });
-      socket.on("ping", () => {
-        socket.emit("pong");
-      });
-    });
-  }
-  emitQRCode(qrCode) {
-    this.logger.info("\uD83D\uDCF1 Broadcasting QR code to all clients");
-    this.io.emit("qr:generated", {
-      qrCode,
-      timestamp: new Date().toISOString()
-    });
-  }
-  emitConnectionStatus(status) {
-    this.logger.info(`\uD83D\uDD04 Broadcasting connection status: ${status.status}`);
-    this.io.emit("connection:status", {
-      ...status,
-      timestamp: new Date().toISOString()
-    });
-  }
-  emitWhatsAppConnected(user) {
-    this.logger.info(`✅ Broadcasting WhatsApp connected: ${user.name}`);
-    this.io.emit("whatsapp:connected", { user });
-  }
-  emitWhatsAppDisconnected() {
-    this.logger.warn("\uD83D\uDCF4 Broadcasting WhatsApp disconnected");
-    this.io.emit("whatsapp:disconnected", {});
-  }
-  emitMessageReceived(data) {
-    this.logger.info(`\uD83D\uDCE8 Broadcasting incoming message from: ${data.from}`);
-    this.io.emit("message:received", {
-      ...data,
-      timestamp: new Date().toISOString()
-    });
-  }
-  emitMessageSent(data) {
-    this.logger.info(`\uD83D\uDCE4 Broadcasting message sent status: ${data.success}`);
-    this.io.emit("message:sent", {
-      ...data,
-      timestamp: new Date().toISOString()
-    });
-  }
-  getIO() {
-    return this.io;
-  }
-}
-
-// src/routes/health.routes.ts
-import { Hono } from "hono";
-var healthRoutes = new Hono;
-healthRoutes.get("/health", (c) => {
-  return c.json({
-    status: "ok",
-    timestamp: new Date().toISOString()
-  });
-});
-var health_routes_default = healthRoutes;
-
-// src/routes/status.routes.ts
-import { Hono as Hono2 } from "hono";
-function createStatusRoutes(waService) {
-  const statusRoutes = new Hono2;
-  statusRoutes.get("/status", (c) => {
-    const status = waService.getStatus();
-    return c.json({
-      status: {
-        connected: status.connected,
-        user: status.user,
-        hasQRCode: !!status.qrCode
-      },
-      timestamp: new Date().toISOString()
-    });
-  });
-  return statusRoutes;
-}
-
-// src/routes/qr.routes.ts
-import { Hono as Hono3 } from "hono";
-var logger7 = new Logger("QRRoutes");
-function createQRRoutes(waService) {
-  const qrRoutes = new Hono3;
-  qrRoutes.get("/api/qr", (c) => {
-    const qrCode = waService.getQRCode();
-    if (!qrCode) {
-      return c.json({
-        success: false,
-        message: "No QR code available. WhatsApp might be already connected."
-      }, 404);
-    }
-    return c.json({
-      success: true,
-      qrCode,
-      timestamp: new Date().toISOString()
-    });
-  });
-  qrRoutes.post("/api/qr/generate", async (c) => {
-    try {
-      const status = waService.getStatus();
-      if (status.connected) {
-        return c.json({
-          success: false,
-          message: "WhatsApp is already connected. Please logout first."
-        }, 400);
-      }
-      logger7.info("\uD83D\uDCF1 Generating new QR code...");
-      await waService.restart();
-      return c.json({
-        success: true,
-        message: "QR code generation initiated. Please wait for the QR code.",
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      logger7.error("Failed to generate QR code:", error);
-      return c.json({
-        success: false,
-        message: error.message || "Failed to generate QR code"
-      }, 500);
-    }
-  });
-  return qrRoutes;
-}
-
 // src/routes/message.routes.ts
-import { Hono as Hono4 } from "hono";
-var logger8 = new Logger("MessageRoutes");
+var logger7 = new Logger("MessageRoutes");
 function createMessageRoutes(waService, wsService) {
   const messageRoutes = new Hono4;
   messageRoutes.post("/api/send", async (c) => {
@@ -1851,9 +1883,9 @@ function createMessageRoutes(waService, wsService) {
         const container = getContainer();
         const assistant = container.getAIAssistant();
         assistant.invalidateCache(to);
-        logger8.debug(`AI cache invalidated for ${to} after admin reply`);
+        logger7.debug(`AI cache invalidated for ${to} after admin reply`);
       } catch (error) {
-        logger8.debug("AI not initialized, skip cache invalidation");
+        logger7.debug("AI not initialized, skip cache invalidation");
       }
       wsService.emitMessageSent({
         to,
@@ -1866,7 +1898,7 @@ function createMessageRoutes(waService, wsService) {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      logger8.error("Failed to send message:", error);
+      logger7.error("Failed to send message:", error);
       wsService.emitMessageSent({
         to: "",
         message: "",
@@ -1891,7 +1923,7 @@ function createMessageRoutes(waService, wsService) {
         total: messages.length
       });
     } catch (error) {
-      logger8.error("Failed to get chat history:", error);
+      logger7.error("Failed to get chat history:", error);
       return c.json({
         success: false,
         message: error.message || "Failed to get chat history"
@@ -1907,7 +1939,7 @@ function createMessageRoutes(waService, wsService) {
         total: activeChats.length
       });
     } catch (error) {
-      logger8.error("Failed to get active chats:", error);
+      logger7.error("Failed to get active chats:", error);
       return c.json({
         success: false,
         message: error.message || "Failed to get active chats"
@@ -1949,7 +1981,7 @@ function setupRoutes(app, waService, wsService) {
 }
 
 // src/app.ts
-var logger9 = new Logger("Application");
+var logger8 = new Logger("Application");
 var app = new Hono6;
 app.use("*", cors({
   origin: "*",
@@ -1960,7 +1992,7 @@ var waService;
 var wsService;
 async function startApp() {
   try {
-    logger9.info("\uD83D\uDE80 Starting WhatsApp Gateway Service...");
+    logger8.info("\uD83D\uDE80 Starting WhatsApp Gateway Service...");
     const port = Number(CONFIG.PORT) || 3000;
     const httpServer = createServer(async (req, res) => {
       const request = new Request(`http://${req.headers.host || "localhost"}${req.url}`, {
@@ -1986,18 +2018,18 @@ async function startApp() {
       res.end();
     });
     httpServer.listen(port);
-    logger9.info(`\uD83C\uDF10 HTTP Server running on http://0.0.0.0:${port}`);
+    logger8.info(`\uD83C\uDF10 HTTP Server running on http://0.0.0.0:${port}`);
     wsService = new WebSocketService(httpServer);
-    logger9.info(`\uD83D\uDD0C WebSocket Server running on port ${port}`);
+    logger8.info(`\uD83D\uDD0C WebSocket Server running on port ${port}`);
     waService = new WhatsAppService;
     setupRoutes(app, waService, wsService);
     waService.onQRCode((qrCode) => {
-      logger9.info("\uD83D\uDCF1 QR Code received from WhatsApp");
+      logger8.info("\uD83D\uDCF1 QR Code received from WhatsApp");
       wsService.emitQRCode(qrCode);
     });
     waService.onConnectionUpdate((status) => {
       if (status.connected && status.user) {
-        logger9.info(`✅ WhatsApp connected: ${status.user.name}`);
+        logger8.info(`✅ WhatsApp connected: ${status.user.name}`);
         wsService.emitConnectionStatus({
           status: "connected",
           user: status.user
@@ -2005,7 +2037,7 @@ async function startApp() {
         wsService.emitWhatsAppConnected(status.user);
         wsService.emitQRCode("");
       } else if (!status.connected) {
-        logger9.info("\uD83D\uDCF4 WhatsApp disconnected");
+        logger8.info("\uD83D\uDCF4 WhatsApp disconnected");
         wsService.emitConnectionStatus({
           status: "disconnected"
         });
@@ -2015,11 +2047,11 @@ async function startApp() {
       }
     });
     await waService.initialize();
-    logger9.info("✅ WhatsApp Gateway Service started successfully!");
-    logger9.info(`\uD83D\uDCF1 Scan QR code to connect WhatsApp`);
-    logger9.info(`\uD83C\uDF10 Frontend should connect to: http://0.0.0.0:${port}`);
+    logger8.info("✅ WhatsApp Gateway Service started successfully!");
+    logger8.info(`\uD83D\uDCF1 Scan QR code to connect WhatsApp`);
+    logger8.info(`\uD83C\uDF10 Frontend should connect to: http://0.0.0.0:${port}`);
   } catch (error) {
-    logger9.error("❌ Failed to start application:", error);
+    logger8.error("❌ Failed to start application:", error);
     process.exit(1);
   }
 }

@@ -1,10 +1,12 @@
 import makeWASocket, {
     DisconnectReason,
+    fetchLatestBaileysVersion,
     generateMessageID,
     proto,
     useMultiFileAuthState,
     type WASocket,
-} from "baileys";
+} from "atexovi-baileys";
+import fs from "fs";
 import { Boom } from "@hapi/boom";
 import QRCode from "qrcode";
 import { Logger, baileysLogger } from "../core/logger/Logger";
@@ -96,7 +98,7 @@ export class WhatsAppService {
             const connected = await this.waitForConnection();
             if (!connected) {
                 throw new Error(
-                    "WhatsApp is not connected (timeout waiting for connection)"
+                    "WhatsApp is not connected (timeout waiting for connection)",
                 );
             }
         }
@@ -127,6 +129,28 @@ export class WhatsAppService {
         await this.initialize();
     }
 
+    /**
+     * Clear session data (hard reset)
+     */
+    async clearSession(): Promise<void> {
+        this.logger.info("🧹 Clearing session data...");
+        await this.closeSocket();
+        this.resetState();
+
+        try {
+            if (fs.existsSync(CONFIG.SESSION_PATH)) {
+                await fs.promises.rm(CONFIG.SESSION_PATH, {
+                    recursive: true,
+                    force: true,
+                });
+                this.logger.info("✅ Session directory removed");
+            }
+        } catch (error) {
+            this.logger.error("❌ Failed to clear session:", error);
+            throw error;
+        }
+    }
+
     // ==================== INITIALIZATION ====================
 
     /**
@@ -137,14 +161,22 @@ export class WhatsAppService {
             this.logger.info("🚀 Initializing WhatsApp...");
 
             const { state, saveCreds } = await useMultiFileAuthState(
-                CONFIG.SESSION_PATH
+                CONFIG.SESSION_PATH,
+            );
+
+            const { version, isLatest } = await fetchLatestBaileysVersion();
+            this.logger.info(
+                `Using WA version v${version.join(".")} (isLatest: ${isLatest})`,
             );
 
             this.socket = makeWASocket({
+                version,
                 auth: state,
                 logger: baileysLogger,
                 printQRInTerminal: false, // Disable QR printing
                 syncFullHistory: false, // Reduce sync verbosity
+                browser: ["Kapal Trip", "Chrome", "120.0.6099.109"], // Use a modern browser string
+                generateHighQualityLinkPreview: true,
             });
 
             this.socket.ev.on("creds.update", saveCreds);
@@ -211,6 +243,12 @@ export class WhatsAppService {
         const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
+        this.logger.error("❌ Disconnected details:", {
+            error: lastDisconnect?.error,
+            statusCode,
+            reason: lastDisconnect?.error?.message,
+            stack: lastDisconnect?.error?.stack,
+        });
         this.logger.warn(`❌ Disconnected (reconnect: ${shouldReconnect})`);
 
         this.isConnected = false;
@@ -262,7 +300,7 @@ export class WhatsAppService {
         this.socket.ev.on("messages.upsert", async ({ messages, type }) => {
             if (type !== "notify") return;
 
-            messageHandlers(this.socket!, messages);
+            // messageHandlers(this.socket!, messages);
         });
     }
 
@@ -310,12 +348,12 @@ export class WhatsAppService {
      * Wait for connection to be established
      */
     private async waitForConnection(
-        timeoutMs: number = 5000
+        timeoutMs: number = 5000,
     ): Promise<boolean> {
         if (this.isConnected) return true;
 
         this.logger.info(
-            `⏳ Waiting for connection (timeout: ${timeoutMs}ms)...`
+            `⏳ Waiting for connection (timeout: ${timeoutMs}ms)...`,
         );
 
         const start = Date.now();
