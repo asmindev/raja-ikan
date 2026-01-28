@@ -4,8 +4,14 @@ import { Label } from '@/components/ui/label';
 import { Icon, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    MapContainer,
+    Marker,
+    TileLayer,
+    useMap,
+    useMapEvents,
+} from 'react-leaflet';
 
 // Fix untuk marker icon default Leaflet
 delete (Icon.Default.prototype as any)._getIconUrl;
@@ -22,6 +28,15 @@ interface LocationPickerProps {
     latitude?: number;
     longitude?: number;
     onLocationChange: (lat: number, lng: number) => void;
+}
+
+// Component to handle map view updates
+function MapUpdater({ center }: { center: LatLngExpression }) {
+    const map = useMap();
+    useEffect(() => {
+        map.setView(center, map.getZoom());
+    }, [center, map]);
+    return null;
 }
 
 function MapClickHandler({
@@ -42,28 +57,48 @@ export function LocationPicker({
     longitude,
     onLocationChange,
 }: LocationPickerProps) {
-    // Default ke Jakarta jika tidak ada koordinat
-    const [position, setPosition] = useState<LatLngExpression>([
-        latitude || -6.2088,
-        longitude || 106.8456,
-    ]);
-    const [mapKey, setMapKey] = useState(0);
+    const defaultCenter: LatLngExpression = [-6.2088, 106.8456]; // Jakarta
+    const [position, setPosition] = useState<LatLngExpression>(
+        latitude && longitude ? [latitude, longitude] : defaultCenter,
+    );
 
-    const handleLocationSelect = (lat: number, lng: number) => {
-        setPosition([lat, lng]);
-        onLocationChange(lat, lng);
-    };
+    const markerRef = useRef<any>(null);
+
+    // Sync prop changes to state
+    useEffect(() => {
+        if (latitude && longitude) {
+            setPosition([latitude, longitude]);
+        }
+    }, [latitude, longitude]);
+
+    const handleLocationSelect = useCallback(
+        (lat: number, lng: number) => {
+            setPosition([lat, lng]);
+            onLocationChange(lat, lng);
+        },
+        [onLocationChange],
+    );
+
+    const eventHandlers = useMemo(
+        () => ({
+            dragend() {
+                const marker = markerRef.current;
+                if (marker != null) {
+                    const { lat, lng } = marker.getLatLng();
+                    handleLocationSelect(lat, lng);
+                }
+            },
+        }),
+        [handleLocationSelect],
+    );
 
     const handleGetCurrentLocation = () => {
         if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    setPosition([lat, lng]);
-                    onLocationChange(lat, lng);
-                    // Force map refresh
-                    setMapKey((prev) => prev + 1);
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    handleLocationSelect(lat, lng);
                 },
                 (error) => {
                     console.error('Error getting location:', error);
@@ -77,12 +112,8 @@ export function LocationPicker({
         }
     };
 
-    useEffect(() => {
-        if (latitude && longitude) {
-            setPosition([latitude, longitude]);
-            setMapKey((prev) => prev + 1);
-        }
-    }, [latitude, longitude]);
+    const currentLat = Array.isArray(position) ? position[0] : position.lat;
+    const currentLng = Array.isArray(position) ? position[1] : position.lng;
 
     return (
         <div className="space-y-4">
@@ -110,16 +141,10 @@ export function LocationPicker({
                         id="latitude"
                         type="number"
                         step="any"
-                        value={
-                            Array.isArray(position) ? position[0] : position.lat
-                        }
+                        value={currentLat}
                         onChange={(e) => {
-                            const lat = parseFloat(e.target.value);
-                            const lng = Array.isArray(position)
-                                ? position[1]
-                                : position.lng;
-                            setPosition([lat, lng]);
-                            onLocationChange(lat, lng);
+                            const lat = parseFloat(e.target.value) || 0;
+                            handleLocationSelect(lat, currentLng);
                         }}
                         placeholder="Latitude"
                     />
@@ -130,25 +155,18 @@ export function LocationPicker({
                         id="longitude"
                         type="number"
                         step="any"
-                        value={
-                            Array.isArray(position) ? position[1] : position.lng
-                        }
+                        value={currentLng}
                         onChange={(e) => {
-                            const lng = parseFloat(e.target.value);
-                            const lat = Array.isArray(position)
-                                ? position[0]
-                                : position.lat;
-                            setPosition([lat, lng]);
-                            onLocationChange(lat, lng);
+                            const lng = parseFloat(e.target.value) || 0;
+                            handleLocationSelect(currentLat, lng);
                         }}
                         placeholder="Longitude"
                     />
                 </div>
             </div>
 
-            <div className="h-[400px] overflow-hidden rounded-lg border">
+            <div className="h-[400px] overflow-hidden rounded-lg border shadow-sm">
                 <MapContainer
-                    key={mapKey}
                     center={position}
                     zoom={13}
                     style={{ height: '100%', width: '100%' }}
@@ -157,14 +175,19 @@ export function LocationPicker({
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Marker position={position} />
+                    <MapUpdater center={position} />
+                    <Marker
+                        draggable={true}
+                        eventHandlers={eventHandlers}
+                        position={position}
+                        ref={markerRef}
+                    />
                     <MapClickHandler onLocationSelect={handleLocationSelect} />
                 </MapContainer>
             </div>
 
             <p className="text-sm text-muted-foreground">
-                Klik pada peta untuk memilih lokasi atau gunakan tombol "Lokasi
-                Saat Ini"
+                Klik pada peta atau geser marker untuk mengubah lokasi.
             </p>
         </div>
     );

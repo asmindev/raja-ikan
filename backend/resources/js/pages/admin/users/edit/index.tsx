@@ -60,8 +60,11 @@ export default function Edit({ user }: Props) {
                             latitude={data.latitude}
                             longitude={data.longitude}
                             onLocationChange={(lat, lng) => {
-                                setData('latitude', lat);
-                                setData('longitude', lng);
+                                setData((data) => ({
+                                    ...data,
+                                    latitude: lat,
+                                    longitude: lng,
+                                }));
                             }}
                             address={data.address}
                         />
