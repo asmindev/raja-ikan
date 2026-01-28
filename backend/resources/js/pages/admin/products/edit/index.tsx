@@ -29,18 +29,23 @@ const breadcrumbs: BreadcrumbItemType[] = [
 interface FormData {
     name: string;
     description: string;
+    category: string;
     price: number | undefined;
+    stock: number;
     image: FileList | null;
     is_active: boolean;
+    is_featured: boolean;
     delete_image?: boolean;
 }
 
 interface EditPageProps extends PageProps {
     product: Product;
+    existingCategories: string[];
 }
 
 export default function AdminProductsEdit() {
-    const { product } = usePage().props as unknown as EditPageProps;
+    const { product, existingCategories = [] } = usePage()
+        .props as unknown as EditPageProps;
     const { errors } = usePage().props;
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -48,9 +53,12 @@ export default function AdminProductsEdit() {
         defaultValues: {
             name: product.name,
             description: product.description,
+            category: product.category || '',
             price: product.price,
+            stock: product.stock,
             image: null,
             is_active: product.is_active,
+            is_featured: product.is_featured,
             delete_image: false,
         },
         mode: 'onChange',
@@ -97,8 +105,11 @@ export default function AdminProductsEdit() {
         const formData = new FormData();
         formData.append('name', data.name);
         formData.append('description', data.description);
+        formData.append('category', data.category);
         formData.append('price', data.price?.toString() || '');
+        formData.append('stock', data.stock.toString());
         formData.append('is_active', data.is_active ? '1' : '0');
+        formData.append('is_featured', data.is_featured ? '1' : '0');
         formData.append('_method', 'PUT');
         if (data.delete_image) {
             formData.append('delete_image', '1');
@@ -169,6 +180,40 @@ export default function AdminProductsEdit() {
                                         />
                                         <FormField
                                             control={form.control}
+                                            name="category"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>
+                                                        Category
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder="Select or type category"
+                                                            className="h-12"
+                                                            list="category-list"
+                                                            {...field}
+                                                            value={
+                                                                field.value ||
+                                                                ''
+                                                            }
+                                                        />
+                                                    </FormControl>
+                                                    <datalist id="category-list">
+                                                        {existingCategories.map(
+                                                            (cat) => (
+                                                                <option
+                                                                    key={cat}
+                                                                    value={cat}
+                                                                />
+                                                            ),
+                                                        )}
+                                                    </datalist>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
                                             name="price"
                                             rules={{
                                                 required:
@@ -205,6 +250,40 @@ export default function AdminProductsEdit() {
                                                 </FormItem>
                                             )}
                                         />
+                                        <FormField
+                                            control={form.control}
+                                            name="stock"
+                                            rules={{
+                                                required: 'Stock is required.',
+                                                min: {
+                                                    value: 0,
+                                                    message:
+                                                        'Stock cannot be negative.',
+                                                },
+                                            }}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Stock</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="0"
+                                                            className="h-12"
+                                                            {...field}
+                                                            onChange={(e) =>
+                                                                field.onChange(
+                                                                    parseInt(
+                                                                        e.target
+                                                                            .value,
+                                                                    ) || 0,
+                                                                )
+                                                            }
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
 
                                     <FormField
@@ -231,31 +310,61 @@ export default function AdminProductsEdit() {
                                         )}
                                     />
 
-                                    <FormField
-                                        control={form.control}
-                                        name="is_active"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between rounded-md border p-4">
-                                                <div className="space-y-1">
-                                                    <FormLabel className="text-sm font-medium">
-                                                        Active Product
-                                                    </FormLabel>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Make this product
-                                                        available for purchase
-                                                    </p>
-                                                </div>
-                                                <FormControl>
-                                                    <Switch
-                                                        checked={field.value}
-                                                        onCheckedChange={
-                                                            field.onChange
-                                                        }
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                        <FormField
+                                            control={form.control}
+                                            name="is_active"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-md border p-4">
+                                                    <div className="space-y-1">
+                                                        <FormLabel className="text-sm font-medium">
+                                                            Active Product
+                                                        </FormLabel>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Available for
+                                                            purchase
+                                                        </p>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch
+                                                            checked={
+                                                                field.value
+                                                            }
+                                                            onCheckedChange={
+                                                                field.onChange
+                                                            }
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="is_featured"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-md border p-4">
+                                                    <div className="space-y-1">
+                                                        <FormLabel className="text-sm font-medium">
+                                                            Featured Product
+                                                        </FormLabel>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Show in homepage
+                                                        </p>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch
+                                                            checked={
+                                                                field.value
+                                                            }
+                                                            onCheckedChange={
+                                                                field.onChange
+                                                            }
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Image Upload */}

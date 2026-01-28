@@ -4,7 +4,10 @@ export interface Product {
     description: string;
     price: number;
     image: string | null;
+    category: string | null;
+    stock: number;
     is_active: boolean;
+    is_featured: boolean;
     created_at: string;
     updated_at: string;
 }

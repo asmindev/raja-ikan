@@ -132,7 +132,7 @@ class XGBoostConfig:
     n_estimators: int = 100
     random_state: int = 42
     test_size: float = 0.2
-    training_n_nodes: int = 10  # Number of nodes for training sample
+    training_n_nodes: int = 20  # Increased for better training signal (was 10)
     model_cache_file: str = field(
         default_factory=lambda: os.path.join(
             os.path.dirname(__file__), "cache", "xgb_model.pkl"

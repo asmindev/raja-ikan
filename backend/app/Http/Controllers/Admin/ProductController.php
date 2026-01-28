@@ -57,7 +57,14 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return Inertia::render('admin/products/create/index');
+        $categories = Product::distinct()
+            ->whereNotNull('category')
+            ->orderBy('category')
+            ->pluck('category');
+
+        return Inertia::render('admin/products/create/index', [
+            'existingCategories' => $categories
+        ]);
     }
 
     /**
@@ -68,25 +75,18 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'category' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ], [
             'name.required' => 'Product name is required.',
-            'name.string' => 'Product name must be a valid text.',
-            'name.max' => 'Product name cannot exceed 255 characters.',
-            'description.required' => 'Product description is required.',
-            'description.string' => 'Product description must be a valid text.',
-            'price.required' => 'Product price is required.',
-            'price.numeric' => 'Product price must be a valid number.',
-            'price.min' => 'Product price cannot be negative.',
-            'image.image' => 'The uploaded file must be an image.',
-            'image.mimes' => 'Image must be in JPEG, PNG, JPG, or GIF format.',
-            'image.max' => 'Image size cannot exceed 10MB.',
-            'is_active.boolean' => 'Active status must be true or false.',
+            'stock.required' => 'Stock is required.',
         ]);
 
-        $data = $request->only(['name', 'description', 'price', 'is_active']);
+        $data = $request->only(['name', 'description', 'category', 'price', 'stock', 'is_active', 'is_featured']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
@@ -112,8 +112,14 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        $categories = Product::distinct()
+            ->whereNotNull('category')
+            ->orderBy('category')
+            ->pluck('category');
+
         return Inertia::render('admin/products/edit/index', [
             'product' => $product,
+            'existingCategories' => $categories
         ]);
     }
 
@@ -125,25 +131,15 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'category' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'is_active' => 'boolean',
-        ], [
-            'name.required' => 'Product name is required.',
-            'name.string' => 'Product name must be a valid text.',
-            'name.max' => 'Product name cannot exceed 255 characters.',
-            'description.required' => 'Product description is required.',
-            'description.string' => 'Product description must be a valid text.',
-            'price.required' => 'Product price is required.',
-            'price.numeric' => 'Product price must be a valid number.',
-            'price.min' => 'Product price cannot be negative.',
-            'image.image' => 'The uploaded file must be an image.',
-            'image.mimes' => 'Image must be in JPEG, PNG, JPG, or GIF format.',
-            'image.max' => 'Image size cannot exceed 10MB.',
-            'is_active.boolean' => 'Active status must be true or false.',
+            'is_featured' => 'boolean',
         ]);
 
-        $data = $request->only(['name', 'description', 'price', 'is_active']);
+        $data = $request->only(['name', 'description', 'category', 'price', 'stock', 'is_active', 'is_featured']);
 
         // Handle delete image flag
         if ($request->has('delete_image') && $request->input('delete_image')) {

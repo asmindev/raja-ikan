@@ -609,10 +609,6 @@ export default function AlgorithmVisualization() {
                                                     <Trophy className="h-6 w-6" />
                                                     Optimasi Selesai
                                                 </CardTitle>
-                                                <CardDescription>
-                                                    AI berhasil menemukan rute
-                                                    yang lebih efisien.
-                                                </CardDescription>
                                             </div>
                                             <Button
                                                 onClick={handleReset}

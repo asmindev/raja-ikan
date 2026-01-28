@@ -116,6 +116,50 @@ export default function AdminProductsShow() {
                                             </>
                                         )}
                                     </Badge>
+                                    <Badge
+                                        variant={
+                                            product.is_featured
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        className="gap-1"
+                                    >
+                                        {product.is_featured ? (
+                                            <>
+                                                <Check className="h-3 w-3" />
+                                                Featured
+                                            </>
+                                        ) : (
+                                            'Standard'
+                                        )}
+                                    </Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Stock & Category */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-sm">
+                                    Inventory & Category
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Category
+                                    </p>
+                                    <Badge variant="outline" className="mt-1">
+                                        {product.category || 'Uncategorized'}
+                                    </Badge>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Stock
+                                    </p>
+                                    <p className="font-medium">
+                                        {product.stock} units
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>

@@ -245,6 +245,25 @@ if __name__ == "__main__":
     )
     logger.info("Setting up Genetic Algorithm for hyperparameter search...")
 
+    # Create fixed sample nodes for consistent comparison across hyperparameters
+    # This ensures that all parameter combinations are tested on the SAME problem instance.
+    n_nodes = config.xgboost.training_n_nodes
+    all_nodes = list(graph_loader.graph.nodes)
+
+    if len(all_nodes) < n_nodes:
+        logger.warning(f"Graph only has {len(all_nodes)} nodes, using all of them.")
+        training_sample_nodes = all_nodes
+    else:
+        # Use random sample of nodes to ensure diversity
+        # Generated ONCE so all params are tested on SAME problem
+        import random
+        training_sample_nodes = random.sample(all_nodes, n_nodes)
+
+    logger.info(f"Generated fixed problem instance with {len(training_sample_nodes)} nodes for fair comparison")
+
+    # Calculate distance matrix ONCE
+    training_dist_matrix, _ = graph_loader.calculate_distance_matrix(training_sample_nodes)
+
     def run_ga_with_params(pop_size, generations, mutation_rate, crossover_rate):
         """Wrapper function to run GA with specific hyperparameters."""
         ga = GeneticAlgorithm(config.ga)
@@ -253,14 +272,11 @@ if __name__ == "__main__":
         ga.config.mutation_rate = mutation_rate
         ga.config.crossover_rate = crossover_rate
 
-        # Create sample distance matrix
-        n_nodes = config.xgboost.training_n_nodes
-        sample_nodes = list(graph_loader.graph.nodes)[:n_nodes]
+        # Set the pre-calculated distance matrix
+        ga.set_distance_matrix(training_dist_matrix)
 
-        dist_matrix, _ = graph_loader.calculate_distance_matrix(sample_nodes)
-        ga.set_distance_matrix(dist_matrix)
-
-        result = ga.run(verbose=False)
+        # Disable deterministic mode to allow true parameter evaluation
+        result = ga.run(verbose=False, deterministic=False)
         return result.distance
 
     # Train XGBoost
