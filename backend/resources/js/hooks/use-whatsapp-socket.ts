@@ -183,6 +183,69 @@ export function useWhatsAppSocket(): UseWhatsAppSocketReturn {
         };
     }, []);
 
+    // Polling fallback for when WebSocket fails
+    useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                // Fetch status
+                const response = await fetch(`${WA_GATEWAY_URL}/status`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status) {
+                        setConnectionStatus((prev) => {
+                            // Only update if status changed to avoid re-renders
+                            if (
+                                prev?.status !==
+                                (data.status.connected
+                                    ? 'connected'
+                                    : 'disconnected')
+                            ) {
+                                return {
+                                    status: data.status.connected
+                                        ? 'connected'
+                                        : 'disconnected',
+                                    user: data.status.user,
+                                    timestamp: new Date().toISOString(),
+                                };
+                            }
+                            return prev;
+                        });
+
+                        // If connected, clear QR
+                        if (data.status.connected) {
+                            setQrCode(null);
+                            setIsConnected(true);
+                        } else {
+                            setIsConnected(false);
+                            // If disconnected and has QR, fetch it
+                            if (data.status.hasQRCode) {
+                                const qrResponse = await fetch(
+                                    `${WA_GATEWAY_URL}/api/qr`,
+                                );
+                                if (qrResponse.ok) {
+                                    const qrData = await qrResponse.json();
+                                    if (qrData.qrCode) {
+                                        setQrCode(qrData.qrCode);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                // Silent error for polling
+            }
+        };
+
+        // Initial check
+        checkStatus();
+
+        // Poll every 3 seconds
+        const intervalId = setInterval(checkStatus, 3000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
     const sendMessage = async (to: string, message: string) => {
         try {
             const response = await fetch(`${WA_GATEWAY_URL}/api/send`, {

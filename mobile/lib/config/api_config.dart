@@ -14,8 +14,9 @@ class ApiConfig {
       case TargetPlatform.android:
         // Untuk HP fisik via USB, gunakan IP komputer di jaringan lokal
         // Untuk emulator, gunakan 10.0.2.2
-        return 'http://192.168.1.5:8000'; // IP komputer untuk device fisik
-      // return 'http://10.0.2.2:8000'; // Uncomment ini untuk Android emulator
+        // return 'http://192.168.1.5:8000'; // IP komputer untuk device fisik
+        return 'https://rajaikan.zettdev.my.id';
+        // return 'http://10.0.2.2:8000'; // Uncomment ini untuk Android emulator
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
       case TargetPlatform.windows:
