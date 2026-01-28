@@ -2,7 +2,7 @@
 node_modules/
 
 # Session files (WhatsApp authentication)
-sesi/
+# sesi/
 *.session
 
 # Logs
