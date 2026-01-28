@@ -7,7 +7,6 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
     Select,
     SelectContent,
@@ -19,7 +18,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Layout from '@/layouts/admin-layout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
-import { Loader2 } from 'lucide-react';
+import {
+    BarChart2,
+    Car,
+    Check,
+    Loader2,
+    Map as MapIcon,
+    MapPin,
+    MousePointerClick,
+    Rocket,
+    Trophy,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -229,113 +238,250 @@ export default function AlgorithmVisualization() {
         <Layout>
             <Head title="Optimasi Rute" />
 
-            <div className="space-y-6 p-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
+            <div className="container mx-auto max-w-7xl space-y-8 p-6">
+                {/* Header Section */}
+                <div className="flex flex-col gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
                         Visualisasi Optimasi Rute
                     </h1>
-                    <p className="text-muted-foreground">
-                        Simulasi dan visualisasi proses optimasi rute
-                        menggunakan Genetic Algorithm
+                    <p className="max-w-2xl text-muted-foreground dark:text-gray-400">
+                        Simulasi interaktif algoritma genetika untuk optimasi
+                        rute pengiriman. Bandingkan efisiensi rute manual vs
+                        hasil optimasi AI.
                     </p>
                 </div>
 
-                {/* Step 1: Source Selection */}
-                {step === 'select' && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>📍 Pilih Sumber Rute</CardTitle>
-                            <CardDescription>
-                                Pilih rute dari driver aktif atau tambahkan
-                                titik secara manual
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <RadioGroup
-                                value={routeSource}
-                                onValueChange={handleRouteSourceChange}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem
-                                        value="driver"
-                                        id="driver"
-                                    />
-                                    <Label htmlFor="driver">
-                                        Rute Driver Aktif
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem
-                                        value="manual"
-                                        id="manual"
-                                    />
-                                    <Label htmlFor="manual">
-                                        Pilih Titik Manual
-                                    </Label>
-                                </div>
-                            </RadioGroup>
+                {/* Stepper */}
+                <div className="relative">
+                    <div className="absolute top-1/2 left-0 h-0.5 w-full -translate-y-1/2 bg-gray-200 dark:bg-gray-700" />
+                    <div className="relative flex justify-between">
+                        {[
+                            {
+                                id: 'select',
+                                label: '1. Konfigurasi',
+                                icon: MapPin,
+                            },
+                            {
+                                id: 'display',
+                                label: '2. Analisis Awal',
+                                icon: BarChart2,
+                            },
+                            {
+                                id: 'optimize',
+                                label: '3. Hasil Optimasi',
+                                icon: Rocket,
+                            },
+                        ].map((s, idx) => {
+                            const isActive = step === s.id;
+                            const isCompleted =
+                                (step === 'display' && idx === 0) ||
+                                (step === 'optimize' && idx <= 1);
+                            const Icon = s.icon;
 
-                            {routeSource === 'driver' && (
-                                <div className="space-y-4">
-                                    {isLoadingDriverRoutes ? (
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            Memuat rute driver...
-                                        </div>
-                                    ) : driverRoutes.length > 0 ? (
-                                        <Select
-                                            value={selectedDriverRoute}
-                                            onValueChange={
-                                                handleDriverRouteSelect
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Pilih driver" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {driverRoutes.map((route) => (
-                                                    <SelectItem
-                                                        key={route.id}
-                                                        value={route.id.toString()}
-                                                    >
-                                                        {route.driver_name} (
-                                                        {
-                                                            route.coordinates
-                                                                .length
-                                                        }{' '}
-                                                        titik)
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                            Tidak ada rute driver aktif
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
-                            {routeSource === 'manual' && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm text-muted-foreground">
-                                            Klik pada peta untuk menambahkan
-                                            titik (minimal 2 titik)
-                                        </p>
-                                        {selectedPoints.length > 0 && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setSelectedPoints([])
-                                                }
-                                                className="h-8 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                            >
-                                                Hapus Semua
-                                            </Button>
+                            return (
+                                <div
+                                    key={s.id}
+                                    className={`flex flex-col items-center gap-2 bg-white px-4 py-2 dark:bg-gray-950 ${
+                                        isActive || isCompleted
+                                            ? 'text-primary dark:text-primary'
+                                            : 'text-muted-foreground dark:text-gray-500'
+                                    }`}
+                                >
+                                    <div
+                                        className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-lg transition-all ${
+                                            isActive
+                                                ? 'scale-110 border-primary bg-primary text-white shadow-lg'
+                                                : isCompleted
+                                                  ? 'border-primary bg-white text-primary dark:bg-gray-900 dark:text-primary'
+                                                  : 'border-gray-300 bg-white text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-500'
+                                        }`}
+                                    >
+                                        {isCompleted ? (
+                                            <Check className="h-5 w-5" />
+                                        ) : (
+                                            <Icon className="h-5 w-5" />
                                         )}
                                     </div>
+                                    <span className="text-sm font-medium">
+                                        {s.label}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Main Content Area */}
+                <div className="min-h-[500px]">
+                    {/* Step 1: Configuration */}
+                    {step === 'select' && (
+                        <div className="grid gap-6 lg:grid-cols-12">
+                            {/* Left Panel: Controls */}
+                            <div className="space-y-6 lg:col-span-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <MapPin className="h-5 w-5 text-primary" />
+                                            Sumber Data
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Pilih metode input titik lokasi
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div
+                                                onClick={() =>
+                                                    handleRouteSourceChange(
+                                                        'driver',
+                                                    )
+                                                }
+                                                className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-900 ${
+                                                    routeSource === 'driver'
+                                                        ? 'border-primary bg-slate-50 dark:bg-slate-900/50'
+                                                        : 'border-transparent bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-900 dark:ring-gray-800'
+                                                }`}
+                                            >
+                                                <div className="mb-2 flex justify-center">
+                                                    <Car className="h-8 w-8 text-blue-500" />
+                                                </div>
+                                                <div className="text-center font-semibold">
+                                                    Driver Aktif
+                                                </div>
+                                                <div className="text-center text-xs text-muted-foreground">
+                                                    Gunakan rute real-time
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                onClick={() =>
+                                                    handleRouteSourceChange(
+                                                        'manual',
+                                                    )
+                                                }
+                                                className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-900 ${
+                                                    routeSource === 'manual'
+                                                        ? 'border-primary bg-slate-50 dark:bg-slate-900/50'
+                                                        : 'border-transparent bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-900 dark:ring-gray-800'
+                                                }`}
+                                            >
+                                                <div className="mb-2 flex justify-center">
+                                                    <MousePointerClick className="h-8 w-8 text-blue-500" />
+                                                </div>
+                                                <div className="text-center font-semibold">
+                                                    Manual
+                                                </div>
+                                                <div className="text-center text-xs text-muted-foreground">
+                                                    Pilih titik di peta
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {routeSource === 'driver' && (
+                                            <div className="space-y-3 rounded-md bg-slate-50 p-4 dark:bg-slate-900">
+                                                <Label>Pilih Driver</Label>
+                                                {isLoadingDriverRoutes ? (
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                        Memuat data driver...
+                                                    </div>
+                                                ) : driverRoutes.length > 0 ? (
+                                                    <Select
+                                                        value={
+                                                            selectedDriverRoute
+                                                        }
+                                                        onValueChange={
+                                                            handleDriverRouteSelect
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="bg-white">
+                                                            <SelectValue placeholder="Pilih driver..." />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {driverRoutes.map(
+                                                                (route) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            route.id
+                                                                        }
+                                                                        value={route.id.toString()}
+                                                                    >
+                                                                        {
+                                                                            route.driver_name
+                                                                        }{' '}
+                                                                        (
+                                                                        {
+                                                                            route
+                                                                                .coordinates
+                                                                                .length
+                                                                        }{' '}
+                                                                        titik)
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                ) : (
+                                                    <p className="text-sm text-red-500">
+                                                        Tidak ada driver aktif
+                                                        saat ini
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {routeSource === 'manual' && (
+                                            <div className="space-y-3 rounded-md bg-slate-50 p-4 dark:bg-slate-900">
+                                                <div className="flex items-center justify-between">
+                                                    <Label>
+                                                        Daftar Titik (
+                                                        {selectedPoints.length})
+                                                    </Label>
+                                                    {selectedPoints.length >
+                                                        0 && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                setSelectedPoints(
+                                                                    [],
+                                                                )
+                                                            }
+                                                            className="h-auto p-0 text-red-500 hover:bg-transparent hover:text-red-700"
+                                                        >
+                                                            Reset
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Klik peta untuk menambah
+                                                    lokasi. Minimal 2 (Start + 1
+                                                    Tujuan).
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            onClick={handleShowInitialRoute}
+                                            disabled={
+                                                isLoadingRoute ||
+                                                selectedPoints.length < 2
+                                            }
+                                            className="w-full text-base"
+                                            size="lg"
+                                        >
+                                            {isLoadingRoute && (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            )}
+                                            Analisis Rute Awal →
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Right Panel: Map */}
+                            <div className="lg:col-span-8">
+                                <Card className="h-full overflow-hidden border-2">
                                     <RouteMap
                                         points={selectedPoints}
                                         onPointAdd={handlePointAdd}
@@ -344,171 +490,232 @@ export default function AlgorithmVisualization() {
                                         autoZoom={false}
                                         initialView={mapView}
                                         onViewChange={handleViewChange}
+                                        id="map-select"
                                     />
-                                </div>
-                            )}
-
-                            {selectedPoints.length >= 2 && (
-                                <Button
-                                    onClick={handleShowInitialRoute}
-                                    disabled={isLoadingRoute}
-                                    className="w-full"
-                                >
-                                    {isLoadingRoute && (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    )}
-                                    Tampilkan Rute Awal
-                                </Button>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Step 2: Display Initial Route */}
-                {step === 'display' && initialRoute && (
-                    <>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>🗺️ Rute Awal</CardTitle>
-                                <CardDescription>
-                                    Rute sebelum optimasi dari OSRM
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <RouteMap
-                                    points={selectedPoints}
-                                    route={initialRoute}
-                                    mode="display"
-                                    initialView={mapView}
-                                    onViewChange={handleViewChange}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>📊 Informasi Rute Awal</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            Total Jarak
-                                        </p>
-                                        <p className="text-2xl font-bold">
-                                            {(
-                                                initialRoute.routes[0]
-                                                    .distance / 1000
-                                            ).toFixed(2)}{' '}
-                                            km
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            Estimasi Waktu
-                                        </p>
-                                        <p className="text-2xl font-bold">
-                                            {Math.floor(
-                                                initialRoute.routes[0]
-                                                    .duration / 60,
-                                            )}{' '}
-                                            menit
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            Jumlah Titik
-                                        </p>
-                                        <p className="text-2xl font-bold">
-                                            {selectedPoints.length} titik
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <Button
-                                        onClick={handleOptimize}
-                                        disabled={isOptimizing}
-                                        className="flex-1"
-                                    >
-                                        {isOptimizing && (
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        )}
-                                        🚀 Optimasi Rute
-                                    </Button>
-                                    <Button
-                                        onClick={handleReset}
-                                        variant="outline"
-                                    >
-                                        Reset
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
-
-                {/* Step 3: Optimization Results */}
-                {step === 'optimize' && optimizationResult && initialRoute && (
-                    <>
-                        <Card className="mb-6">
-                            <CardHeader>
-                                <CardTitle>🗺️ Hasil Optimasi Rute</CardTitle>
-                                <CardDescription>
-                                    Rute setelah dioptimasi dengan Genetic
-                                    Algorithm (Hijau = Optimized, Biru =
-                                    Original)
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <RouteMap
-                                    points={selectedPoints}
-                                    route={initialRoute}
-                                    optimizedRoute={
-                                        optimizationResult.osrm_route
-                                    }
-                                    optimizedOrder={
-                                        optimizationResult.optimized_order
-                                    }
-                                    mode="display"
-                                    initialView={mapView}
-                                    onViewChange={handleViewChange}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <div className="flex justify-end">
-                            <Button onClick={handleReset} variant="outline">
-                                Mulai Ulang
-                            </Button>
+                                </Card>
+                            </div>
                         </div>
+                    )}
 
-                        <Tabs defaultValue="summary" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="summary">
-                                    Ringkasan
-                                </TabsTrigger>
-                                <TabsTrigger value="ga">
-                                    Genetic Algorithm
-                                </TabsTrigger>
-                            </TabsList>
+                    {/* Step 2: Confirmation / Pre-Analysis */}
+                    {step === 'display' && initialRoute && (
+                        <div className="space-y-6">
+                            <Card className="border-l-4 border-l-blue-500 shadow-sm dark:bg-gray-950">
+                                <CardHeader>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <CardTitle className="flex items-center gap-2 text-xl text-blue-700 dark:text-blue-400">
+                                                <MapIcon className="h-6 w-6" />
+                                                Rute Awal Terdeteksi
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Berikut adalah rute default
+                                                berdasarkan urutan input data.
+                                            </CardDescription>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={handleReset}
+                                                variant="outline"
+                                            >
+                                                Kembali
+                                            </Button>
+                                            <Button
+                                                onClick={handleOptimize}
+                                                disabled={isOptimizing}
+                                                className="bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                {isOptimizing ? (
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Rocket className="mr-2 h-4 w-4" />
+                                                )}
+                                                Jalankan Optimasi AI
+                                                {!isOptimizing && (
+                                                    <span className="ml-2 text-xs opacity-80">
+                                                        (XGBoost + Genetic)
+                                                    </span>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="mb-6 grid grid-cols-3 gap-6 rounded-lg bg-blue-50 p-6 dark:bg-blue-950/20">
+                                        <div className="text-center">
+                                            <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                Total Jarak
+                                            </div>
+                                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                                {(
+                                                    initialRoute.routes[0]
+                                                        .distance / 1000
+                                                ).toFixed(2)}
+                                                <span className="ml-1 text-sm font-normal text-muted-foreground">
+                                                    km
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="border-x border-blue-200 text-center dark:border-blue-900">
+                                            <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                Estimasi Waktu (OSRM)
+                                            </div>
+                                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                                {Math.floor(
+                                                    initialRoute.routes[0]
+                                                        .duration / 60,
+                                                )}
+                                                <span className="ml-1 text-sm font-normal text-muted-foreground">
+                                                    menit
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                Total Titik
+                                            </div>
+                                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                                {selectedPoints.length}
+                                            </div>
+                                        </div>
+                                    </div>
 
-                            <TabsContent value="summary" className="space-y-4">
-                                <ComparisonMetrics
-                                    before={initialRoute}
-                                    after={optimizationResult}
-                                />
-                            </TabsContent>
+                                    <div className="h-[500px] overflow-hidden rounded-xl border">
+                                        <RouteMap
+                                            points={selectedPoints}
+                                            route={initialRoute}
+                                            mode="display"
+                                            initialView={mapView}
+                                            onViewChange={handleViewChange}
+                                            id="map-display"
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
 
-                            <TabsContent value="ga" className="space-y-4">
-                                <GAVisualization
-                                    data={optimizationResult.details!}
-                                    coordinates={selectedPoints}
-                                />
-                            </TabsContent>
-                        </Tabs>
-                    </>
-                )}
+                    {/* Step 3: Optimization Results */}
+                    {step === 'optimize' &&
+                        optimizationResult &&
+                        initialRoute && (
+                            <div className="animate-in space-y-8 duration-700 fade-in slide-in-from-bottom-4">
+                                {/* Summary & Actions */}
+                                <Card className="border-l-4 border-l-green-500 shadow-lg">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle className="flex items-center gap-2 text-2xl text-green-700">
+                                                    <Trophy className="h-6 w-6" />
+                                                    Optimasi Selesai
+                                                </CardTitle>
+                                                <CardDescription>
+                                                    AI berhasil menemukan rute
+                                                    yang lebih efisien.
+                                                </CardDescription>
+                                            </div>
+                                            <Button
+                                                onClick={handleReset}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                Mulai Ulang
+                                            </Button>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Tabs
+                                            defaultValue="summary"
+                                            className="w-full"
+                                        >
+                                            <TabsList className="mb-4 grid w-full grid-cols-2 lg:w-[400px]">
+                                                <TabsTrigger value="summary">
+                                                    Ringkasan Performa
+                                                </TabsTrigger>
+                                                <TabsTrigger value="ga">
+                                                    Detail AI (GA)
+                                                </TabsTrigger>
+                                            </TabsList>
+
+                                            <TabsContent
+                                                value="summary"
+                                                className="mt-0"
+                                            >
+                                                <ComparisonMetrics
+                                                    before={initialRoute}
+                                                    after={optimizationResult}
+                                                />
+                                            </TabsContent>
+
+                                            <TabsContent value="ga">
+                                                <GAVisualization
+                                                    data={
+                                                        optimizationResult.details!
+                                                    }
+                                                    coordinates={selectedPoints}
+                                                    targetDistance={
+                                                        optimizationResult.total_distance
+                                                    }
+                                                />
+                                            </TabsContent>
+                                        </Tabs>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Visual Comparison Maps */}
+                                <div className="grid gap-6 lg:grid-cols-2">
+                                    {/* Map 1: Before Optimization */}
+                                    <Card className="overflow-hidden border-blue-200 p-0 shadow-md dark:border-blue-900">
+                                        <CardHeader className="bg-blue-50/50 p-4 dark:bg-blue-950/20">
+                                            <CardTitle className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-400">
+                                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold dark:bg-blue-900 dark:text-blue-200">
+                                                    A
+                                                </span>
+                                                Rute Awal (Manual)
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-0">
+                                            <RouteMap
+                                                id="map-initial"
+                                                points={selectedPoints}
+                                                route={initialRoute}
+                                                mode="display"
+                                                initialView={mapView}
+                                                onViewChange={handleViewChange}
+                                            />
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Map 2: After Optimization */}
+                                    <Card className="overflow-hidden border-green-200 p-0 shadow-md dark:border-green-900">
+                                        <CardHeader className="bg-green-50/50 p-4 dark:bg-green-950/20">
+                                            <CardTitle className="flex items-center justify-center gap-2 text-green-700 dark:text-green-400">
+                                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm font-bold dark:bg-green-900 dark:text-green-200">
+                                                    B
+                                                </span>
+                                                Rute Optimal (AI)
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-0">
+                                            <RouteMap
+                                                id="map-optimized"
+                                                points={selectedPoints}
+                                                optimizedRoute={
+                                                    optimizationResult.osrm_route
+                                                }
+                                                optimizedOrder={
+                                                    optimizationResult.optimized_order
+                                                }
+                                                mode="display"
+                                                initialView={mapView}
+                                                onViewChange={handleViewChange}
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+                        )}
+                </div>
             </div>
         </Layout>
     );

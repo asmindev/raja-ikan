@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { OSRMResponse, OptimizeResponse } from '@/types/optimization';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, History } from 'lucide-react';
 
 interface ComparisonMetricsProps {
     before: OSRMResponse;
@@ -25,14 +25,17 @@ export default function ComparisonMetrics({
         <div className="grid gap-4 md:grid-cols-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Sebelum Optimasi</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <History className="h-5 w-5" />
+                        Sebelum Optimasi
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div>
                         <p className="text-sm text-muted-foreground">
                             Total Jarak
                         </p>
-                        <p className="text-3xl font-bold">
+                        <p className="text-3xl font-bold dark:text-gray-100">
                             {beforeDistance.toFixed(2)} km
                         </p>
                     </div>
@@ -40,7 +43,7 @@ export default function ComparisonMetrics({
                         <p className="text-sm text-muted-foreground">
                             Estimasi Waktu
                         </p>
-                        <p className="text-3xl font-bold">
+                        <p className="text-3xl font-bold dark:text-gray-100">
                             {Math.floor(beforeDuration)} menit
                         </p>
                     </div>
@@ -62,7 +65,8 @@ export default function ComparisonMetrics({
 
             <Card className="border-green-500">
                 <CardHeader>
-                    <CardTitle className="text-green-600">
+                    <CardTitle className="flex items-center gap-2 text-green-600">
+                        <CheckCircle2 className="h-5 w-5" />
                         Sesudah Optimasi
                     </CardTitle>
                 </CardHeader>
@@ -115,57 +119,6 @@ export default function ComparisonMetrics({
                     </div>
                 </CardContent>
             </Card>
-
-            {after.details && (
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle>⏱️ Waktu Eksekusi</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-4 gap-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    Graph Loading
-                                </p>
-                                <p className="text-xl font-bold">
-                                    {after.details.timing.graph_load.toFixed(3)}
-                                    s
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    Distance Matrix
-                                </p>
-                                <p className="text-xl font-bold">
-                                    {after.details.timing.distance_matrix.toFixed(
-                                        3,
-                                    )}
-                                    s
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    GA Execution
-                                </p>
-                                <p className="text-xl font-bold">
-                                    {after.details.timing.ga_execution.toFixed(
-                                        3,
-                                    )}
-                                    s
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    Total
-                                </p>
-                                <p className="text-xl font-bold text-primary">
-                                    {after.details.timing.total.toFixed(3)}s
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
         </div>
     );
 }

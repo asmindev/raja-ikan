@@ -37,6 +37,7 @@ interface RouteMapProps {
     autoZoom?: boolean;
     initialView?: { center: [number, number]; zoom: number };
     onViewChange?: (center: { lat: number; lng: number }, zoom: number) => void;
+    id?: string;
 }
 
 export default function RouteMap({
@@ -49,6 +50,7 @@ export default function RouteMap({
     optimizedOrder,
     initialView,
     onViewChange,
+    id = 'route-map',
 }: RouteMapProps) {
     const mapRef = useRef<L.Map | null>(null);
     const markersRef = useRef<L.Marker[]>([]);
@@ -83,7 +85,7 @@ export default function RouteMap({
             const center = initialView ? initialView.center : defaultCenter;
             const zoom = initialView ? initialView.zoom : defaultZoom;
 
-            const map = L.map('route-map', {
+            const map = L.map(id, {
                 zoomControl: true,
                 scrollWheelZoom: true,
                 doubleClickZoom: true,
@@ -257,10 +259,7 @@ export default function RouteMap({
     return (
         <>
             <div className="space-y-2">
-                <div
-                    id="route-map"
-                    className="h-[500px] w-full rounded-lg border"
-                />
+                <div id={id} className="h-[500px] w-full rounded-lg border" />
                 {mode === 'select' && (
                     <p className="text-xs text-muted-foreground">
                         {points.length} titik dipilih. Klik pada peta untuk

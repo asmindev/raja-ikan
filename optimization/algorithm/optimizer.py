@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from deap import base, creator, tools
 from .config import OptimizationConfig, GAConfig
 from .utils import GraphLoader
+from .xgboost_trainer import XGBoostTrainer  # Added import
 from utils.logger import logger
 
 
@@ -217,6 +218,7 @@ class RouteOptimizer:
         self.ga = GeneticAlgorithm(self.config.ga)
         self.ga.initialize_creator()
         self.average_speed_kmh = 40.0
+        self.xgb_trainer = XGBoostTrainer(self.config)
 
     def optimize_from_coordinates(
         self,
@@ -252,8 +254,32 @@ class RouteOptimizer:
         logger.debug("Calculating distance matrix")
         dist_matrix, paths_dict = self.graph_loader.calculate_distance_matrix(nodes)
 
-        # Run GA
+        # Set distance matrix first
         self.ga.set_distance_matrix(dist_matrix)
+
+        # Apply Dynamic Parameters from XGBoost if requested
+        if use_optimal_params:
+            try:
+                logger.info("Attempting to use XGBoost for dynamic parameter tuning...")
+                # Try to load the model
+                self.xgb_trainer.load_model()
+
+                # Predict optimal parameters
+                # Note: Currently predict_optimal_hyperparameters does a grid search on the model surface
+                # It does not take the current problem size into account, but assumes the model generalizes
+                # or was trained on similar data.
+                optimal_params = self.xgb_trainer.predict_optimal_hyperparameters()
+
+                # Apply parameters to GA config
+                self.ga.config = self.xgb_trainer.get_optimal_config(optimal_params)
+
+                logger.info("Successfully applied dynamic XGBoost parameters")
+            except FileNotFoundError:
+                logger.warning("XGBoost model not found. Using default parameters.")
+            except Exception as e:
+                logger.warning(f"Failed to use XGBoost parameters: {e}. Using defaults.")
+
+        # Run GA
         logger.debug("Running genetic algorithm")
         ga_result = self.ga.run(verbose=verbose)
 
