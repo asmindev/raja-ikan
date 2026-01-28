@@ -5,6 +5,7 @@ import {
     GalleryVerticalEnd,
     LayoutDashboard,
     Package,
+    Route as RouteIcon,
     Truck,
     Users,
 } from 'lucide-react';
@@ -76,6 +77,11 @@ const navigation: NavItem[] = [
                 ],
             },
             { label: 'Products', href: '/admin/products', icon: Package },
+            {
+                label: 'Optimasi Rute',
+                href: '/admin/algorithm',
+                icon: RouteIcon,
+            },
             // { label: 'Messages', href: '/admin/messages', icon: MessageCircle },
         ],
     },

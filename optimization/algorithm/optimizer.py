@@ -21,6 +21,7 @@ class GAResult:
     distance: float
     generation: int
     population_stats: Optional[Dict] = None
+    history: Optional[Dict] = None  # Evolution history for visualization
 
 
 @dataclass
@@ -32,6 +33,7 @@ class OptimizationResult:
     total_distance: float
     estimated_time_minutes: Optional[float] = None
     paths_dict: Optional[Dict] = None
+    ga_result: Optional[GAResult] = None  # Include GA result for history
 
 
 class GeneticAlgorithm:
@@ -126,6 +128,15 @@ class GeneticAlgorithm:
         # Hall of Fame
         hof = tools.HallOfFame(self.config.hall_of_fame_size)
 
+        # Track evolution history for visualization
+        history = {
+            "generations": [],
+            "fitness_scores": [],
+            "best_routes": [],
+            "avg_fitness": [],
+            "diversity": [],
+        }
+
         # Run evolution
         for gen in range(generations):
             # Selection
@@ -154,9 +165,24 @@ class GeneticAlgorithm:
             pop[:] = offspring
             hof.update(pop)
 
+            # Track history
+            best_fit = hof[0].fitness.values[0]
+            avg_fit = sum(ind.fitness.values[0] for ind in pop) / len(pop)
+
+            # Calculate population diversity (unique routes)
+            unique_routes = len(set(tuple(ind) for ind in pop))
+            diversity_ratio = unique_routes / len(pop)
+
+            history["generations"].append(gen)
+            history["fitness_scores"].append(best_fit)
+            history["best_routes"].append(list(hof[0]))
+            history["avg_fitness"].append(avg_fit)
+            history["diversity"].append(diversity_ratio)
+
             if verbose and gen % 10 == 0:
-                best_fit = hof[0].fitness.values[0]
-                logger.debug(f"Gen {gen}: Best fitness = {best_fit:.2f}")
+                logger.debug(
+                    f"Gen {gen}: Best={best_fit:.2f}, Avg={avg_fit:.2f}, Diversity={diversity_ratio:.2%}"
+                )
 
         best_individual = hof[0]
         best_distance = best_individual.fitness.values[0]
@@ -170,6 +196,7 @@ class GeneticAlgorithm:
             distance=best_distance,
             generation=generations,
             population_stats=None,
+            history=history,
         )
 
     def run(self, verbose: bool = False, deterministic: bool = True) -> GAResult:
@@ -237,7 +264,13 @@ class RouteOptimizer:
             route_indices = route_indices[zero_pos:] + route_indices[:zero_pos]
             logger.debug(f"Rotated route to start with 0: {route_indices}")
 
+        # Append start node to end to complete the loop (TSP Round Trip)
+        if route_indices:
+            route_indices.append(route_indices[0])
+            logger.debug(f"Appended start node to complete loop: {route_indices}")
+
         # Get optimized coordinates
+        # Note: route_indices now includes start node at both beginning and end
         optimized_nodes = [nodes[i] for i in route_indices]
         route_coords = self.graph_loader.get_node_coordinates(optimized_nodes)
         route_coords_list = [(lat, lon) for lat, lon in route_coords]
@@ -257,4 +290,5 @@ class RouteOptimizer:
             total_distance=ga_result.distance,
             estimated_time_minutes=estimated_time,
             paths_dict=paths_dict,
+            ga_result=ga_result,  # Include GA result for history access
         )

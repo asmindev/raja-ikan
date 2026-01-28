@@ -25,11 +25,11 @@ class GAConfig:
     """Configuration for Genetic Algorithm."""
 
     # Default/Original GA parameters
-    pop_size: int = 50
-    generations: int = 50
-    mutation_rate: float = 0.2
-    crossover_rate: float = 0.7
-    elitism_percentage: float = 0.1  # 10% best individuals preserved
+    pop_size: int = 100
+    generations: int = 100
+    mutation_rate: float = 0.3
+    crossover_rate: float = 0.8
+    elitism_percentage: float = 0.2  # 20% best individuals preserved
     tournament_size: int = 3
     hall_of_fame_size: int = 1
 

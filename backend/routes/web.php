@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AlgorithmController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
@@ -68,6 +69,10 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     Route::get('messages', function () {
         return Inertia::render('admin/messages/index');
     })->name('admin.messages.index');
+
+    // Algorithm Visualization
+    Route::get('algorithm', [AlgorithmController::class, 'index'])->name('admin.algorithm.index');
+    Route::get('algorithm/driver-routes', [AlgorithmController::class, 'getDriverRoutes'])->name('admin.algorithm.driver-routes');
 });
 
 // Customer routes (role: customer)

@@ -36,6 +36,43 @@ class OptimizedWaypoint(BaseModel):
     longitude: float
 
 
+class GAHistory(BaseModel):
+    """Genetic Algorithm evolution history."""
+
+    generations: List[int]
+    fitness_scores: List[float]
+    best_routes: List[List[int]]
+    avg_fitness: List[float]
+    diversity: List[float]
+
+
+class OptimizationTiming(BaseModel):
+    """Timing breakdown for optimization process."""
+
+    graph_load: float
+    distance_matrix: float
+    ga_execution: float
+    total: float
+
+
+class OptimizationParameters(BaseModel):
+    """Parameters used in optimization."""
+
+    pop_size: int
+    generations: int
+    mutation_rate: float
+    crossover_rate: float
+    tournament_size: int
+
+
+class OptimizationDetail(BaseModel):
+    """Detailed optimization process data."""
+
+    timing: OptimizationTiming
+    ga_history: GAHistory
+    parameters: OptimizationParameters
+
+
 class OptimizeResponse(BaseModel):
     """
     Simple optimization response.
@@ -50,3 +87,6 @@ class OptimizeResponse(BaseModel):
     # OSRM integration helpers
     osrm_url: str  # Ready-to-use OSRM request URL
     optimized_order: List[int]  # Original indices order: [0, 2, 1]
+
+    # Detailed process data for visualization
+    details: Optional[OptimizationDetail] = None
