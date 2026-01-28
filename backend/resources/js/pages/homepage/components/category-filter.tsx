@@ -19,14 +19,14 @@ export function CategoryFilter({
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-wrap items-center justify-center gap-6 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-center gap-2 border-b border-zinc-200/50 pb-6 dark:border-zinc-800/50">
                 <button
                     onClick={() => handleSelect(null)}
                     className={cn(
-                        'text-sm font-medium transition-colors hover:text-zinc-900 dark:hover:text-zinc-100',
+                        'rounded-full px-6 py-2 text-sm font-medium transition-all duration-300',
                         selected === null
-                            ? 'text-zinc-900 dark:text-zinc-100'
-                            : 'text-zinc-500 dark:text-zinc-400',
+                            ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 dark:bg-white dark:text-zinc-900'
+                            : 'bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 dark:bg-transparent dark:text-zinc-400 dark:hover:text-zinc-200',
                     )}
                 >
                     Semua Produk
@@ -36,10 +36,10 @@ export function CategoryFilter({
                         key={category}
                         onClick={() => handleSelect(category)}
                         className={cn(
-                            'text-sm font-medium transition-colors hover:text-zinc-900 dark:hover:text-zinc-100',
+                            'rounded-full px-6 py-2 text-sm font-medium transition-all duration-300',
                             selected === category
-                                ? 'text-zinc-900 dark:text-zinc-100'
-                                : 'text-zinc-500 dark:text-zinc-400',
+                                ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 dark:bg-white dark:text-zinc-900'
+                                : 'bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 dark:bg-transparent dark:text-zinc-400 dark:hover:text-zinc-200',
                         )}
                     >
                         {category}

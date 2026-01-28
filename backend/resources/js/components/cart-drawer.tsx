@@ -11,7 +11,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Sheet,
-    SheetClose,
     SheetContent,
     SheetDescription,
     SheetFooter,
@@ -21,7 +20,7 @@ import {
 import { useCart } from '@/contexts/cart-context';
 import { formatRupiah } from '@/lib/utils';
 import { router, usePage } from '@inertiajs/react';
-import { Minus, Plus, ShoppingCart, X } from 'lucide-react';
+import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -201,15 +200,6 @@ export function CartDrawer() {
                 <SheetHeader>
                     <div className="flex items-center justify-between">
                         <SheetTitle>Keranjang Belanja</SheetTitle>
-                        <SheetClose asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </SheetClose>
                     </div>
                     <SheetDescription>
                         {items.length > 0

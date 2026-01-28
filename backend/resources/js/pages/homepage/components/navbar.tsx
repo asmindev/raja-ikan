@@ -16,15 +16,19 @@ export function Navbar() {
     const { openCart, items, isBouncing } = useCart();
 
     return (
-        <nav className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
+        <nav className="sticky top-0 z-50 border-b border-zinc-200/50 bg-white/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:border-zinc-800/50 dark:bg-zinc-950/70">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo */}
                 <Link
                     href="/"
-                    className="flex items-center gap-2 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+                    className="group flex items-center gap-2 text-lg font-bold tracking-tight text-zinc-900 transition-opacity hover:opacity-80 dark:text-zinc-50"
                 >
-                    <Fish className="h-5 w-5" />
-                    <span>Raja Ikan</span>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-blue-600 text-white shadow-lg transition-transform duration-300 group-hover:scale-110">
+                        <Fish className="h-5 w-5" />
+                    </div>
+                    <span className="bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent dark:from-white dark:to-zinc-400">
+                        Raja Ikan
+                    </span>
                 </Link>
 
                 {/* Actions */}

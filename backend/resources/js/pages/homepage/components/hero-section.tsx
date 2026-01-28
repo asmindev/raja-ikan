@@ -1,4 +1,5 @@
-import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { router, usePage } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -43,47 +44,77 @@ export function HeroSection() {
     };
 
     return (
-        <section className="relative px-4 py-18 sm:px-0">
-            <div className="container mx-auto rounded-xl bg-blue-100 px-4 py-8 lg:py-12 dark:bg-blue-900">
-                <div className="mx-auto max-w-3xl text-center">
-                    <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl dark:text-zinc-50">
-                        Seafood Premium, <br />
-                        <span className="text-zinc-500 dark:text-zinc-400">
-                            Dikirim Segar.
+        <section className="relative overflow-hidden px-4 py-12 lg:py-24">
+            <div className="relative container mx-auto overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-teal-900 px-4 py-16 shadow-2xl lg:px-12 lg:py-24 dark:from-black dark:via-zinc-900 dark:to-blue-950">
+                {/* Abstract Shapes */}
+                <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
+                <div className="absolute top-1/2 right-0 h-96 w-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/20 blur-3xl" />
+
+                <div className="relative mx-auto max-w-4xl text-center">
+                    <Badge
+                        variant="secondary"
+                        className="mb-6 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-sm font-medium text-blue-100 backdrop-blur-md"
+                    >
+                        ✨ Seafood Kualitas Ekspor
+                    </Badge>
+
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl">
+                        Laut Segar di <br className="hidden sm:block" />
+                        <span className="bg-gradient-to-r from-teal-200 to-blue-200 bg-clip-text text-transparent">
+                            Setiap Gigitan.
                         </span>
                     </h1>
 
-                    <p className="mt-6 hidden text-lg leading-8 text-zinc-600 sm:block dark:text-zinc-400">
-                        Rasakan pilihan terbaik hasil laut segar, dipanen harian
-                        dari nelayan lokal. Kualitas yang bisa Anda rasakan,
-                        kesegaran yang bisa Anda percaya.
+                    <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-blue-100/80 sm:text-xl">
+                        Langsung dari nelayan lokal pilihan. Jaminan kualitas
+                        premium, dikirim segar setiap hari untuk keluarga Anda.
                     </p>
 
-                    <div className="mt-10 flex items-center justify-center gap-x-6">
-                        <div className="relative mx-auto w-10/12 max-w-md">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search
-                                    className="h-5 w-5 text-zinc-400"
-                                    aria-hidden="true"
+                    <div className="mt-10 flex items-center justify-center">
+                        <div className="relative w-full max-w-lg transition-transform duration-300 hover:-translate-y-1">
+                            <div className="group relative flex items-center overflow-hidden rounded-full bg-white/10 p-2 shadow-2xl ring-1 ring-white/20 backdrop-blur-xl focus-within:bg-white/20 focus-within:ring-white/50">
+                                <div className="flex shrink-0 items-center justify-center pr-2 pl-4">
+                                    <Search className="h-5 w-5 text-blue-200" />
+                                </div>
+                                <input
+                                    type="text"
+                                    className="w-full bg-transparent px-2 py-3 text-lg text-white placeholder:text-blue-200/50 focus:outline-none"
+                                    placeholder="Cari ikan, udang, kepiting..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                 />
-                            </div>
-                            <Input
-                                type="text"
-                                className="block w-full rounded-full border-0 bg-zinc-100 py-4 pr-12 pl-10 text-zinc-900 ring-1 ring-zinc-300 ring-inset placeholder:text-zinc-400 focus:ring-2 focus:ring-zinc-600 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700 dark:focus:ring-zinc-500"
-                                placeholder="Cari salmon, tuna, udang..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                            />
-                            {hasActiveSearch && (
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3"
-                                    onClick={handleClearSearch}
+                                {hasActiveSearch && (
+                                    <button
+                                        onClick={handleClearSearch}
+                                        className="mr-2 rounded-full p-1 text-blue-200 transition-colors hover:bg-white/10"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                                <Button
+                                    onClick={handleSearch}
+                                    className="hidden shrink-0 rounded-full bg-white px-6 py-2 font-semibold text-blue-900 transition-all hover:bg-blue-50 sm:flex"
                                 >
-                                    <X className="h-5 w-5 text-zinc-400" />
-                                </button>
-                            )}
+                                    Cari
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Trust Indicators */}
+                    <div className="mt-12 flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-medium text-blue-200/60 sm:gap-x-12">
+                        <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+                            100% Segar
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+                            Garansi Uang Kembali
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+                            Pengiriman Cepat
                         </div>
                     </div>
                 </div>

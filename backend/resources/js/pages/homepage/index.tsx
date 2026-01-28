@@ -28,12 +28,7 @@ interface HomepageProps {
     };
 }
 
-export default function Homepage({
-    products,
-    categories,
-    featured,
-    filters,
-}: HomepageProps) {
+export default function Homepage({ products, categories }: HomepageProps) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(
         null,
     );
@@ -46,7 +41,12 @@ export default function Homepage({
         <PublicLayout>
             <Head title="Raja Ikan - Premium Seafood" />
 
-            <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
+            <div className="min-h-screen bg-zinc-50 font-sans text-zinc-900 selection:bg-teal-500/30 dark:bg-zinc-950 dark:text-zinc-50">
+                {/* Background Decor */}
+                <div className="fixed inset-0 -z-10 h-full w-full bg-white dark:bg-zinc-950">
+                    <div className="absolute top-0 right-0 -mt-20 -mr-20 h-[500px] w-[500px] rounded-full bg-teal-500/10 blur-[100px]" />
+                    <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[100px]" />
+                </div>
                 <Navbar />
 
                 <main>
