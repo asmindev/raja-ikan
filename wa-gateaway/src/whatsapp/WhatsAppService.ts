@@ -40,6 +40,7 @@ export class WhatsAppService {
 
     // Connection state
     private isConnected = false;
+    private isRestarting = false;
     private userInfo?: WhatsAppUser;
     private currentQRCode: string | null = null;
 
@@ -123,10 +124,15 @@ export class WhatsAppService {
      * Restart connection (generate new QR code)
      */
     async restart(): Promise<void> {
-        this.logger.info("🔄 Restarting WhatsApp connection...");
-        await this.closeSocket();
-        this.resetState();
-        await this.initialize();
+        this.isRestarting = true;
+        try {
+            this.logger.info("🔄 Restarting WhatsApp connection...");
+            await this.closeSocket();
+            this.resetState();
+            await this.initialize();
+        } finally {
+            this.isRestarting = false;
+        }
     }
 
     /**
@@ -139,11 +145,12 @@ export class WhatsAppService {
 
         try {
             if (fs.existsSync(CONFIG.SESSION_PATH)) {
-                await fs.promises.rm(CONFIG.SESSION_PATH, {
-                    recursive: true,
-                    force: true,
-                });
-                this.logger.info("✅ Session directory removed");
+                // Do not delete session as per user request
+                // await fs.promises.rm(CONFIG.SESSION_PATH, {
+                //     recursive: true,
+                //     force: true,
+                // });
+                this.logger.info("✅ Session clear skipped (user request)");
             }
         } catch (error) {
             this.logger.error("❌ Failed to clear session:", error);
@@ -256,7 +263,7 @@ export class WhatsAppService {
 
         this.connectionUpdateCallback?.({ connected: false });
 
-        if (shouldReconnect) {
+        if (shouldReconnect && !this.isRestarting) {
             this.logger.info("🔄 Reconnecting in 3s...");
             setTimeout(() => this.initialize(), 3000);
         }

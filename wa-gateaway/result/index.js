@@ -207,6 +207,7 @@ class WhatsAppService {
     logger;
     socket = null;
     isConnected = false;
+    isRestarting = false;
     userInfo;
     currentQRCode = null;
     qrCodeCallback;
@@ -254,10 +255,15 @@ class WhatsAppService {
         this.logger.info("\uD83D\uDC4B Logged out from WhatsApp");
     }
     async restart() {
-        this.logger.info("\uD83D\uDD04 Restarting WhatsApp connection...");
-        await this.closeSocket();
-        this.resetState();
-        await this.initialize();
+        this.isRestarting = true;
+        try {
+            this.logger.info("\uD83D\uDD04 Restarting WhatsApp connection...");
+            await this.closeSocket();
+            this.resetState();
+            await this.initialize();
+        } finally {
+            this.isRestarting = false;
+        }
     }
     async clearSession() {
         this.logger.info("\uD83E\uDDF9 Clearing session data...");
@@ -265,11 +271,7 @@ class WhatsAppService {
         this.resetState();
         try {
             if (fs2.existsSync(CONFIG.SESSION_PATH)) {
-                await fs2.promises.rm(CONFIG.SESSION_PATH, {
-                    recursive: true,
-                    force: true,
-                });
-                this.logger.info("✅ Session directory removed");
+                this.logger.info("✅ Session clear skipped (user request)");
             }
         } catch (error) {
             this.logger.error("❌ Failed to clear session:", error);
@@ -344,7 +346,7 @@ class WhatsAppService {
         this.isConnected = false;
         this.userInfo = undefined;
         this.connectionUpdateCallback?.({ connected: false });
-        if (shouldReconnect) {
+        if (shouldReconnect && !this.isRestarting) {
             this.logger.info("\uD83D\uDD04 Reconnecting in 3s...");
             setTimeout(() => this.initialize(), 3000);
         }
