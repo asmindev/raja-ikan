@@ -7,6 +7,7 @@ import osmnx as ox
 import networkx as nx
 import numpy as np
 import pickle
+import requests
 from typing import Optional, Tuple, List, Dict, TYPE_CHECKING
 from .config import MapConfig, OptimizationConfig
 from utils.logger import logger
@@ -96,6 +97,45 @@ class GraphLoader:
         if self._graph is None:
             self.load_graph()
 
+        # Try OSRM first for accuracy matching frontend
+        try:
+            return self._calculate_osrm_matrix(nodes)
+        except Exception as e:
+            logger.warning(f"OSRM Matrix failed, falling back to OSMnx: {e}")
+            return self._calculate_osmnx_matrix(nodes)
+
+    def _calculate_osrm_matrix(
+        self, nodes: List[int]
+    ) -> Tuple[np.ndarray, Dict[Tuple[int, int], List[Tuple[float, float]]]]:
+        """Calculate matrix using OSRM Table API."""
+        coords = self.get_node_coordinates(nodes) # [[lat, lon], ...]
+        # OSRM expects: lon,lat;lon,lat
+        coords_str = ";".join([f"{lon},{lat}" for lat, lon in coords])
+
+        url = f"http://router.project-osrm.org/table/v1/driving/{coords_str}?annotations=distance"
+
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        if "code" in data and data["code"] != "Ok":
+            raise ValueError(f"OSRM Error: {data.get('message')}")
+
+        # OSRM returns distance in meters
+        distances = np.array(data["distances"])
+
+        # OSRM Table API doesn't return geometries (paths), only distances/durations
+        # We can leave paths empty or fallback to OSMnx for paths if visualization needs them in the backend debug
+        # For now, we return empty paths as the frontend does its own OSRM routing for visualization
+        n_points = len(nodes)
+        paths_dict = {(i, j): [] for i in range(n_points) for j in range(n_points)}
+
+        return distances, paths_dict
+
+    def _calculate_osmnx_matrix(
+        self, nodes: List[int]
+    ) -> Tuple[np.ndarray, Dict[Tuple[int, int], List[Tuple[float, float]]]]:
+        """Calculate matrix using OSMnx (Fallback)."""
         n_points = len(nodes)
         dist_matrix = np.zeros((n_points, n_points))
         paths_dict = {}

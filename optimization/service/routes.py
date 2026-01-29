@@ -75,6 +75,9 @@ def optimize_route(request: OptimizeRequest):
                 f"Route rotated to start from driver (index 0): {optimized_route}"
             )
 
+        logger.info(f"DEBUG: Optimized route length: {len(optimized_route)}")
+        logger.info(f"DEBUG: Optimized route indices: {optimized_route}")
+
         # Build optimized waypoints list in OPTIMIZED ORDER
         # waypoint_index: position in optimized route (0, 1, 2, 3...)
         # trips_idx: original input coordinate index

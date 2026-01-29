@@ -22,7 +22,7 @@ class AlgorithmController extends Controller
      */
     public function getDriverRoutes()
     {
-        $routes = Route::with(['driver', 'trips.order'])
+        $routes = Route::with(['driver', 'orders.customer'])
             ->whereIn('status', ['active', 'delivering'])
             ->get()
             ->map(function ($route) {
@@ -31,12 +31,13 @@ class AlgorithmController extends Controller
                     'driver_id' => $route->driver_id,
                     'driver_name' => $route->driver->name,
                     'status' => $route->status,
-                    'coordinates' => $route->trips->map(function ($trip) {
+                    'coordinates' => $route->orders->map(function ($order) {
                         return [
-                            'lat' => $trip->order->latitude ?? 0,
-                            'lng' => $trip->order->longitude ?? 0,
-                            'address' => $trip->order->address ?? 'Unknown',
-                            'customer_name' => $trip->order->customer_name ?? 'Unknown',
+                            'lat' => $order->latitude ?? 0,
+                            'lng' => $order->longitude ?? 0,
+                            'address' => $order->address ?? 'Unknown',
+                            'customer_name' => $order->customer->name ?? 'Unknown',
+                            'sequence' => $order->pivot->sequence ?? 0,
                         ];
                     })->filter(function ($coord) {
                         // Filter out invalid coordinates
