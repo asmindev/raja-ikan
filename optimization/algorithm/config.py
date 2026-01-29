@@ -132,7 +132,9 @@ class XGBoostConfig:
     n_estimators: int = 100
     random_state: int = 42
     test_size: float = 0.2
-    training_n_nodes: int = 20  # Increased for better training signal (was 10)
+    training_n_nodes: int = 100  # Increased for better training signal (was 10)
+    max_evals: int = 500  # New: Limit search to 100 random samples
+    n_jobs: int = -1  # New: Use all available cores for parallel training
     model_cache_file: str = field(
         default_factory=lambda: os.path.join(
             os.path.dirname(__file__), "cache", "xgb_model.pkl"

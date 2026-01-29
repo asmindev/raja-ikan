@@ -4,6 +4,9 @@ XGBoost Trainer untuk Hyperparameter Tuning GA
 
 import itertools
 import pickle
+import random
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import partial
 from typing import Dict, List, Optional, Callable
 
 import pandas as pd
@@ -13,6 +16,29 @@ from sklearn.metrics import r2_score, mean_absolute_error
 
 from .config import OptimizationConfig, XGBoostConfig, GAConfig
 from utils.logger import logger
+
+
+# Worker function defined at module level for pickling
+def _worker_run_ga(pop_size, generations, mutation_rate, crossover_rate, config, dist_matrix):
+    """Worker function to run GA."""
+    try:
+        from .optimizer import GeneticAlgorithm
+        ga = GeneticAlgorithm(config.ga)
+        ga.config.pop_size = pop_size
+        ga.config.generations = generations
+        ga.config.mutation_rate = mutation_rate
+        ga.config.crossover_rate = crossover_rate
+
+        # Set the pre-calculated distance matrix
+        ga.set_distance_matrix(dist_matrix)
+
+        # Disable deterministic mode to allow true parameter evaluation
+        result = ga.run(verbose=False, deterministic=False)
+        return result.distance
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise e
 
 
 class XGBoostTrainer:
@@ -28,7 +54,9 @@ class XGBoostTrainer:
     def perform_hyperparameter_search(
         self, run_ga_func: Callable, param_grid: Optional[Dict[str, List]] = None
     ) -> pd.DataFrame:
-        """Perform grid search over GA hyperparameters."""
+        """
+        Perform Randomized Search over GA hyperparameters with Parallel Processing.
+        """
         if param_grid is None:
             param_grid = {
                 "pop_size": self.config.ga.pop_size_space,
@@ -37,7 +65,8 @@ class XGBoostTrainer:
                 "crossover_rate": self.config.ga.crossover_rate_space,
             }
 
-        hyperparam_combinations = list(
+        # Generate ALL possible combinations
+        all_combinations = list(
             itertools.product(
                 param_grid["pop_size"],
                 param_grid["generations"],
@@ -46,31 +75,60 @@ class XGBoostTrainer:
             )
         )
 
-        logger.info(
-            f"Starting hyperparameter search: {len(hyperparam_combinations)} combinations"
-        )
+        # RANDOMIZED SEARCH: Sample only max_evals
+        max_evals = getattr(self.config.xgboost, "max_evals", 100)
+        if len(all_combinations) > max_evals:
+            search_combinations = random.sample(all_combinations, max_evals)
+            logger.info(
+                f"Randomized Search applied: Selecting {max_evals} random samples "
+                f"from {len(all_combinations)} total combinations"
+            )
+        else:
+            search_combinations = all_combinations
+            logger.info(
+                f"Grid Search: Checking all {len(all_combinations)} combinations"
+            )
+
+        n_jobs = getattr(self.config.xgboost, "n_jobs", -1)
+        # If n_jobs is -1 or None, use all CPUs.
+        max_workers = None if (n_jobs is None or n_jobs == -1) else n_jobs
+
+        logger.info(f"Starting parallel execution with workers={max_workers}...")
 
         results = []
-        for i, (pop_size, generations, mutation_rate, crossover_rate) in enumerate(
-            hyperparam_combinations
-        ):
-            logger.debug(
-                f"GA {i+1}/{len(hyperparam_combinations)}: "
-                f"PopSize={pop_size}, Gens={generations}, "
-                f"MutRate={mutation_rate:.2f}, CrossRate={crossover_rate:.2f}"
-            )
 
-            best_fit = run_ga_func(pop_size, generations, mutation_rate, crossover_rate)
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks directly using run_ga_func
+            future_to_params = {
+                executor.submit(run_ga_func, *params): params
+                for params in search_combinations
+            }
 
-            results.append(
-                {
-                    "pop_size": pop_size,
-                    "generations": generations,
-                    "mutation_rate": mutation_rate,
-                    "crossover_rate": crossover_rate,
-                    "best_fit": best_fit,
-                }
-            )
+            # Process results as they complete
+            completed_count = 0
+            for future in as_completed(future_to_params):
+                try:
+                    # result is just the fitness/distance (float)
+                    fitness = future.result()
+
+                    # Get params to reconstruct the dictionary
+                    params = future_to_params[future]
+                    pop, gens, mut, cross = params
+
+                    results.append({
+                        "pop_size": pop,
+                        "generations": gens,
+                        "mutation_rate": mut,
+                        "crossover_rate": cross,
+                        "best_fit": fitness,
+                    })
+                    completed_count += 1
+
+                    if completed_count % 10 == 0:
+                        logger.debug(f"Progress: {completed_count}/{len(search_combinations)} completed")
+
+                except Exception as e:
+                    logger.error(f"Task failed: {e}")
 
         self.training_data = pd.DataFrame(results)
         logger.info(
@@ -86,6 +144,9 @@ class XGBoostTrainer:
                     "No training data. Run perform_hyperparameter_search first."
                 )
             training_data = self.training_data
+
+        if training_data.empty:
+            raise ValueError("Training data is empty. Hyperparameter search failed to collect results.")
 
         feature_cols = ["pop_size", "generations", "mutation_rate", "crossover_rate"]
         X = training_data[feature_cols]
@@ -214,21 +275,17 @@ class XGBoostTrainer:
 if __name__ == "__main__":
     """
     Manual training script untuk XGBoost model.
-
-    Cara pakai:
-    1. cd /home/labubu/Projects/app-delivery/optimization
-    2. source .venv/bin/activate
-    3. python -m algorithm.xgboost_trainer
-
-    Untuk mengubah jumlah nodes training, edit config.py:
-    XGBoostConfig.training_n_nodes = 10  # Cepat (~30 menit)
-    XGBoostConfig.training_n_nodes = 30  # Akurat (~2 jam)
-
-    PERINGATAN: Proses ini bisa memakan waktu 30 menit - 2 JAM!
     """
     import sys
     from .utils import GraphLoader, initialize_algorithm
-    from .optimizer import GeneticAlgorithm
+
+    # GeneticAlgorithm is imported locally inside _worker_run_ga for workers,
+    # but we need it here if we were using it directly, but we use _worker_run_ga via partial.
+    # Actually, we don't strictly need it in main scope unless used.
+    # But let's import it to be safe if any other part uses it.
+    # However, to avoid circular import at top level, we import inside main if possible.
+    # But wait, utils.initialize_algorithm might use it.
+    # Let's keep imports clean.
 
     logger.info("=" * 60)
     logger.info("XGBoost Training Script Started")
@@ -264,27 +321,21 @@ if __name__ == "__main__":
     # Calculate distance matrix ONCE
     training_dist_matrix, _ = graph_loader.calculate_distance_matrix(training_sample_nodes)
 
-    def run_ga_with_params(pop_size, generations, mutation_rate, crossover_rate):
-        """Wrapper function to run GA with specific hyperparameters."""
-        ga = GeneticAlgorithm(config.ga)
-        ga.config.pop_size = pop_size
-        ga.config.generations = generations
-        ga.config.mutation_rate = mutation_rate
-        ga.config.crossover_rate = crossover_rate
-
-        # Set the pre-calculated distance matrix
-        ga.set_distance_matrix(training_dist_matrix)
-
-        # Disable deterministic mode to allow true parameter evaluation
-        result = ga.run(verbose=False, deterministic=False)
-        return result.distance
+    # Use partial to bind config and matrix to the worker function
+    # This makes 'run_ga_partial' picklable because it's a top-level function wrapped in partial
+    # And _worker_run_ga is defined at module level
+    run_ga_partial = partial(
+        _worker_run_ga,
+        config=config,
+        dist_matrix=training_dist_matrix
+    )
 
     # Train XGBoost
     logger.info("Starting hyperparameter search...")
     trainer = XGBoostTrainer(config)
 
     try:
-        training_data = trainer.perform_hyperparameter_search(run_ga_with_params)
+        training_data = trainer.perform_hyperparameter_search(run_ga_partial)
         logger.info(f"Training data collected: {len(training_data)} samples")
 
         logger.info("Training XGBoost model...")
