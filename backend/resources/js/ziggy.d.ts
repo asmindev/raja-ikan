@@ -30,6 +30,8 @@ declare module 'ziggy-js' {
     "profile.update": [],
     "admin.dashboard.index": [],
     "admin.users.index": [],
+    "admin.users.create": [],
+    "admin.users.store": [],
     "admin.users.show": [
         {
             "name": "user",
@@ -135,6 +137,8 @@ declare module 'ziggy-js' {
         }
     ],
     "admin.messages.index": [],
+    "admin.algorithm.index": [],
+    "admin.algorithm.driver-routes": [],
     "customer.dashboard": [],
     "customer.products.index": [],
     "customer.products.show": [

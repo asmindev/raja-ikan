@@ -1,7 +1,9 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Layout, { BreadcrumbItemType } from '@/layouts/admin-layout';
 import { PageProps } from '@/types/user';
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { UserFilters } from './components/user-filters';
 import { UserPagination } from './components/user-pagination';
 import { UserStats } from './components/user-stats';
@@ -38,10 +40,16 @@ export default function AdminUsersIndex() {
                     moderatorUsers={stats.moderator_users}
                 />
                 <Card className="w-full">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle>
                             <h1>Data Users</h1>
                         </CardTitle>
+                        <Link href={route('admin.users.create')}>
+                            <Button size="sm">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create New
+                            </Button>
+                        </Link>
                     </CardHeader>
                     <CardContent className="overflow-x-auto">
                         <UserFilters

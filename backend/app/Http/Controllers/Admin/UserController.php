@@ -57,7 +57,7 @@ class UserController extends Controller
 
     public function create()
     {
-        return Inertia::render('admin/users/create');
+        return Inertia::render('admin/users/create/index');
     }
 
     public function store(Request $request)
