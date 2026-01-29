@@ -44,6 +44,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     Route::redirect('/', '/admin/dashboard');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');
     Route::get('users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('users/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('users', [UserController::class, 'store'])->name('admin.users.store');
     Route::get('users/{user}', [UserController::class, 'show'])->name('admin.users.show');
     Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('users/{user}', [UserController::class, 'update'])->name('admin.users.update');
@@ -170,7 +172,7 @@ Route::prefix('api/v1')->group(function () {
             Route::post('routes/optimize', [\App\Http\Controllers\Api\RouteController::class, 'createAndOptimize']);
             Route::post('routes/{route}/start', [\App\Http\Controllers\Api\RouteController::class, 'start']);
             Route::post('routes/{route}/start-navigation', [\App\Http\Controllers\Api\RouteController::class, 'startNavigation']);
-            Route::delete('routes/{route}/cancel', [\App\Http\Controllers\Api\RouteController::class, 'cancel']);
+            Route::delete('routes/{id}/cancel', [\App\Http\Controllers\Api\RouteController::class, 'cancel']);
             Route::put('orders/{order}/complete', [\App\Http\Controllers\Api\RouteController::class, 'completeOrder']);
             Route::post('routes/{route}/complete', [\App\Http\Controllers\Api\RouteController::class, 'complete']);
         });

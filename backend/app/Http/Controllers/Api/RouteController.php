@@ -682,9 +682,34 @@ class RouteController extends Controller
     /**
      * Cancel route (only if not started delivering)
      */
-    public function cancel(Request $request, Route $route)
+    public function cancel(Request $request, $id)
     {
         $driverId = $request->user()->id;
+        $route = null;
+
+        // Handle ID 0 as "current active route"
+        if ((int)$id === 0) {
+            $route = Route::where('driver_id', $driverId)
+                ->whereIn('status', ['draft', 'planned', 'active'])
+                ->first();
+
+            if (!$route) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active route found to cancel',
+                ], 404);
+            }
+        } else {
+            // Standard ID lookup
+            $route = Route::find($id);
+
+            if (!$route) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Route not found',
+                ], 404);
+            }
+        }
 
         // Check if route belongs to driver
         if ($route->driver_id !== $driverId) {

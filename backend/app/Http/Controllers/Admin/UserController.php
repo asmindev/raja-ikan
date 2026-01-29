@@ -55,6 +55,37 @@ class UserController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('admin/users/create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'role' => 'required|in:customer,driver,admin',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+
+        $user = User::create($validated);
+
+        // Ensure role is assigned if using Spatie Permission or just the column
+        // Assuming 'role' column based on existing code, but best to force attribute if model doesn't fill it automatically
+        // existing update method suggests 'role' is just a column on User model.
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'User created successfully');
+    }
+
     public function show(User $user)
     {
         return Inertia::render('admin/users/show/index', [
