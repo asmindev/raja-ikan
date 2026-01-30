@@ -1,4 +1,5 @@
 import type { Coordinate, OptimizationDetail } from '@/types/optimization';
+import DiversityChart from './diversity-chart';
 import FitnessChart from './fitness-chart';
 
 interface GAVisualizationProps {
@@ -25,10 +26,10 @@ export default function GAVisualization({
             />
 
             {/* Population Diversity Chart */}
-            {/* <DiversityChart
+            <DiversityChart
                 generations={ga_history.generations}
                 diversity={ga_history.diversity}
-            /> */}
+            />
 
             {/* Route Animation */}
             {/* <RouteAnimation
