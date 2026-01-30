@@ -129,7 +129,7 @@ export default function AlgorithmVisualization() {
             const coords = routePoints
                 .map((p) => `${p.lng},${p.lat}`)
                 .join(';');
-            const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
 
             const response = await axios.get<OSRMResponse>(osrmUrl);
             setInitialRoute(response.data);
@@ -188,7 +188,7 @@ export default function AlgorithmVisualization() {
                 const coords = optimizedPoints
                     .map((p) => `${p.lng},${p.lat}`)
                     .join(';');
-                const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
 
                 const osrmResponse = await axios.get<OSRMResponse>(osrmUrl);
 

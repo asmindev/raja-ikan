@@ -153,9 +153,15 @@ class RouteController extends Controller
                 ->json();
 
             if (!isset($optimizationResponse['osrm_url'])) {
+                Log::error('Optimization service failed', [
+                    'response' => $optimizationResponse,
+                    'status' => $optimizationResponse['status'] ?? 'unknown',
+                    'input_coordinates' => $coordinates
+                ]);
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Optimization service error',
+                    'message' => 'Optimization service error: ' . ($optimizationResponse['detail'] ?? json_encode($optimizationResponse)),
                 ], 500);
             }
 
